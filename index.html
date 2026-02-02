@@ -598,6 +598,7 @@ function renderOverview(){
   const wrap=document.getElementById("screen-overview");
   const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal}=calcWeekComponents(weekEpoch);
   const lastWeekTotal=lastWeekSnapshot.total||0;
+  const lastWeek = (lastWeekSnapshot && lastWeekSnapshot.ts) ? calcWeekComponents(lastWeekSnapshot.ts) : null;
   const diff=thisWeekTotal-lastWeekTotal;
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
 
@@ -639,13 +640,14 @@ function renderOverview(){
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
       <div class="small">
-        Last week: ${lastWeekTotal} pts
+        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
         ${
           diff>0?` • ▲ +${diff}`:
           diff<0?` • ▼ ${diff}`:
           ` • same`
         }
       </div>
+      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
@@ -1461,19 +1463,22 @@ function renderMotivation(){
     const win=checkWin.value.trim(); if(!win) return;
     const energy = selectedEnergy || "";
     const mood = selectedMood || "";
-    checkins=[{id:uid(),date:todayISO(),win,energy,mood},...checkins];
+    checkins=[{id:uid(),date:todayISO(),win,energy,mood,points:1},...checkins];
+    motLog=[{id:uid(),date:todayISO(),type:"checkin",points:1},...motLog];
     persist(); renderMotivation();
   };
 
   document.getElementById("saveGratBtn").onclick=()=>{
     if(!gratText.value.trim()) return;
-    gratitudeLog=[{id:uid(),date:todayISO(),text:gratText.value.trim()},...gratitudeLog];
+    gratitudeLog=[{id:uid(),date:todayISO(),text:gratText.value.trim(),points:1},...gratitudeLog];
+    motLog=[{id:uid(),date:todayISO(),type:"gratitude",points:1},...motLog];
     persist(); renderMotivation();
   };
 
   document.getElementById("saveJournalBtn").onclick=()=>{
     if(!journalText.value.trim()) return;
-    journalLog=[{id:uid(),date:todayISO(),text:journalText.value.trim()},...journalLog];
+    journalLog=[{id:uid(),date:todayISO(),text:journalText.value.trim(),points:1},...journalLog];
+    motLog=[{id:uid(),date:todayISO(),type:"journal",points:1},...motLog];
     persist(); renderMotivation();
   };
 
