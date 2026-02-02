@@ -368,8 +368,19 @@ let whyDoingThis=lsGet("why_doing_this","");
 let lowEnergy=lsGet("low_energy",false);
 let unlocked=lsGet("unlocked",{}); // {key:true}
 
-let longTermProg=lsGet("longTermProg",{floors:0,distanceKm:0,reps:0,circuitEx:0});
-let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
+let longTermProg=lsGet("longTermProg",{floors:0,totalKm:0,cyclingKm:0,rowingKm:0,reps:0,circuitEx:0});
+// migrate older versions
+if(longTermProg && typeof longTermProg==="object"){
+  if(longTermProg.distanceKm!=null && longTermProg.totalKm==null){ longTermProg.totalKm = longTermProg.distanceKm; }
+  if(longTermProg.totalKm==null) longTermProg.totalKm = 0;
+  if(longTermProg.cyclingKm==null) longTermProg.cyclingKm = 0;
+  if(longTermProg.rowingKm==null) longTermProg.rowingKm = 0;
+  if(longTermProg.reps==null) longTermProg.reps = 0;
+  if(longTermProg.circuitEx==null) longTermProg.circuitEx = 0;
+}
+let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,distanceKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
+if(monthlyProg && typeof monthlyProg==="object"){ if(monthlyProg.distanceKm==null) monthlyProg.distanceKm=0; }
+
 let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,reps:0,plankSec:0,mobilitySessions:0});
 let weekendProg=lsGet("weekendProg",{swings:0,distanceKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0});
 
@@ -1077,14 +1088,14 @@ function renderWorkout(){
 
   const longTermList=[
     {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, longTermProg.floors||0)},
-    {label:"🚴 Emerald Rider (750 miles cycling)", goal:1200, value:Math.min(1200, longTermProg.distanceKm||0)},
-    {label:"🚶 Year of Movement (1,500 miles total)", goal:2400, value:Math.min(2400, longTermProg.distanceKm||0)},
-    {label:"🚣 Steady Oars (500 miles rowing)", goal:800, value:Math.min(800, longTermProg.distanceKm||0)},
+    {label:"🚴 Emerald Rider (750 miles cycling)", goal:1207.0050, value:Math.min(1207.0050, longTermProg.cyclingKm||0), unit:"km"},
+    {label:"🚶 Year of Movement (1,500 miles total)", goal:2414.0100, value:Math.min(2414.0100, longTermProg.totalKm||0), unit:"km"},
+    {label:"🚣 Steady Oars (500 miles rowing)", goal:804.6700, value:Math.min(804.6700, longTermProg.rowingKm||0), unit:"km"},
     {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, longTermProg.circuitEx||0)}
   ];
   const monthList=[
     {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
-    {label:"🚴 Emerald Century (100 miles cycling)", goal:160, value:Math.min(160, monthlyProg.cyclingKm||0)},
+    {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
     {label:"🧱 Great Wall Progress (1,000 push-ups)", goal:1000, value:Math.min(1000, monthlyProg.pushups||0)},
     {label:"🛰️ Zero-G Mobility (20 sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
     {label:"🚶 Monthly Miles (90 miles)", goal:144.8406, value:Math.min(144.8406, monthlyProg.distanceKm||0), unit:"km"}
@@ -1114,7 +1125,7 @@ function renderWorkout(){
           <div style="margin-bottom:16px;">
             <div class="row-between">
               <div class="row-left" style="font-weight:500;">${item.label}</div>
-              <div class="row-right">${item.unit==="km" ? `${Math.round(kmToMiles(item.value))} / ${Math.round(kmToMiles(item.goal))} mi` : `${Math.round(item.value)} / ${item.goal}`}</div>
+              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${Math.round(item.value)} / ${item.goal}`}</div>
             </div>
             <div class="challenge-bar-bg">
               <div class="challenge-bar-fg" style="width:${pct}%;"></div>
@@ -1159,11 +1170,7 @@ function renderWorkout(){
         <option value="Strength">Strength</option>
         <option value="Circuit">Circuit</option>
         <option value="Yoga">Yoga</option>
-        <option value="Core">Core</option>
-        <option value="Run & Row">Run & Row</option>
-        <option value="Walk">Walk</option>
-        <option value="Navy 300">Navy 300</option>
-        <option value="Other">Other…</option>
+        <option value="Core">Core</option>        <option value="Walk">Walk</option>        <option value="Other">Other…</option>
       </select>
 
       <div id="wCatOtherWrap" class="hidden">
@@ -1295,12 +1302,18 @@ function renderWorkout(){
 
     // long term
     longTermProg.floors = (longTermProg.floors||0)+floorsVal;
-    longTermProg.distanceKm = (longTermProg.distanceKm||0)+kmVal;
+    // distance buckets
+    const isCycling = /cycle|bike|cycling/.test(cat);
+    const isRowing  = /row/.test(cat);
+    longTermProg.totalKm = (longTermProg.totalKm||0) + kmVal;
+    if(isCycling){ longTermProg.cyclingKm = (longTermProg.cyclingKm||0) + kmVal; }
+    if(isRowing){  longTermProg.rowingKm  = (longTermProg.rowingKm||0) + kmVal; }
     longTermProg.circuitEx = (longTermProg.circuitEx||0)+circuitExVal;
 
     // monthly
     monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
     monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
+    monthlyProg.distanceKm = (monthlyProg.distanceKm||0)+(/walk|run/.test(cat)?kmVal:0);
     if(isYoga){ /* monthly yoga per-day counting */
     monthlyProg.pushups=(monthlyProg.pushups||0)+pushupsVal; }
 
@@ -1308,6 +1321,7 @@ function renderWorkout(){
     if(isStrength){ /* per-day counting */ }
     if(isCardio){ /* per-day counting */ }
     weeklyProg.floors = (weeklyProg.floors||0)+floorsVal;
+    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/walk|run|row|cycle|bike|cycling/.test(cat)?kmVal:0);
 
     // weekend
     weekendProg.swings=(weekendProg.swings||0)+swingsVal;
