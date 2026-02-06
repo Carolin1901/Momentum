@@ -248,6 +248,25 @@ textarea.input{
 function lsGet(key, fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
 function lsSet(key, val){localStorage.setItem(key, JSON.stringify(val));}
 function todayISO(){return new Date().toISOString().slice(0,10);}
+
+function weekStartISO(dateISO){
+  const d = new Date((dateISO||todayISO())+"T00:00:00");
+  const g = d.getDay();
+  const diff = (g===0?-6:1)-g;
+  d.setDate(d.getDate()+diff);
+  d.setHours(0,0,0,0);
+  return d.toISOString().slice(0,10);
+}
+function addDaysISO(dateISO, n){
+  const d = new Date(dateISO+"T00:00:00");
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+function monthKey(dateISO){
+  return (dateISO||todayISO()).slice(0,7); // YYYY-MM
+}
+
+
 function mondayOfThisWeekISO(){const d=new Date();const g=d.getDay();const diff=(g===0?-6:1)-g;d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}
 function uid(){return Math.random().toString(36).slice(2,10);}
 function showToast(msg="Saved"){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);}
@@ -259,9 +278,8 @@ function escapeAttr(str){ return escapeHtml(str); }
 
 function minutesToPoints(min){
   const m = Number(min);
-  if(!m || m<=0) return 0;
-  // 1–15 => 1, 16–30 => 2, ... (independent of workout type)
-  return Math.floor((m-1)/15) + 1;
+  if(!isFinite(m) || m < 15) return 0;
+  return Math.floor(m/15);
 }
 
 
@@ -378,11 +396,15 @@ if(longTermProg && typeof longTermProg==="object"){
   if(longTermProg.reps==null) longTermProg.reps = 0;
   if(longTermProg.circuitEx==null) longTermProg.circuitEx = 0;
 }
-let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,distanceKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
-if(monthlyProg && typeof monthlyProg==="object"){ if(monthlyProg.distanceKm==null) monthlyProg.distanceKm=0; }
+let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,distanceKm:0,walkKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
+if(monthlyProg && typeof monthlyProg==="object"){ if(monthlyProg.distanceKm==null) monthlyProg.distanceKm=0; if(monthlyProg.walkKm==null) monthlyProg.walkKm=0; }
 
-let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,reps:0,plankSec:0,mobilitySessions:0});
-let weekendProg=lsGet("weekendProg",{swings:0,distanceKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0});
+let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0});
+if(weeklyProg && typeof weeklyProg==="object"){ if(weeklyProg.rowingKm==null) weeklyProg.rowingKm=0; }
+
+let weekendProg=lsGet("weekendProg",{swings:0,distanceKm:0,footKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0});
+if(weekendProg && typeof weekendProg==="object"){ if(weekendProg.footKm==null) weekendProg.footKm=0; }
+
 
 // rollover
 function updateAdaptiveGoals(){
@@ -430,7 +452,7 @@ function uniqueDaysCount(filterFn){
 function recomputeSessionCounters(){
   const isYoga = (e)=> (String(e.category||"").toLowerCase().match(/yoga|stretch/) );
   const isStrength = (e)=> (String(e.category||"").toLowerCase().match(/strength|kettlebell|kb|push|circuit/) );
-  const isCardio = (e)=> (String(e.category||"").toLowerCase().match(/cardio|row|cycle|run|bike|stair|stairs|climb|walk/) );
+  const isCardio = (e)=> (String(e.category||"").toLowerCase().match(/cardio|row|cycle|running|bike|stair|stairs|climb/) );
 
   // weekly
   if(typeof weeklyProg==="object" && weeklyProg){
@@ -1098,18 +1120,18 @@ function renderWorkout(){
     {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
     {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
     {label:"🧱 Great Wall Progress (1,000 push-ups)", goal:1000, value:Math.min(1000, monthlyProg.pushups||0)},
-    {label:"🛰️ Zero-G Mobility (20 sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
-    {label:"🚶 Monthly Miles (90 miles)", goal:144.8406, value:Math.min(144.8406, monthlyProg.distanceKm||0), unit:"km"}
+    {label:"🛰️ Zero-G Mobility (20 yoga/stretch sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
+    {label:"🚶 Monthly Miles (90 miles walking)", goal:144.8406, value:Math.min(144.8406, monthlyProg.walkKm||0), unit:"km"}
   ];
   const weekList=[
     {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), weeklyProg.strengthSessions||0)},
     {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), weeklyProg.cardioSessions||0)},
-    {label:"🚣 Engine Room (10 miles total)", goal:16.0934, value:Math.min(16.0934, weeklyProg.distanceKm||0), unit:"km"},
+    {label:"🚣 Engine Room (10 miles rowing)", goal:16.0934, value:Math.min(16.0934, weeklyProg.rowingKm||0), unit:"km"},
     {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), weeklyProg.mobilitySessions||0)},
     {label:"💪 Core Stability (600 sec plank)", goal:600, value:Math.min(600, weeklyProg.plankSec||0)}
   ];
   const weekendList=[
-    {label:"🔁 Rep Rally (300 total reps)", goal:300, value:Math.min(300, weekendProg.reps||0)},
+    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:21.0824, value:Math.min(21.0824, weekendProg.footKm||0), unit:"km"},
     {label:"📏 Distance Dash (40 miles)", goal:64.3736, value:Math.min(64.3736, weekendProg.distanceKm||0), unit:"km"},
     {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendProg.yogaSessions||0)},
     {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, weekendProg.circuitEx||0)},
@@ -1155,6 +1177,76 @@ function renderWorkout(){
       <input class="input" id="goalInput" value="${goal}" inputmode="numeric" style="max-width:100px;">
     </div>
 
+    
+    <div class="card">
+      <h2>📈 Compare</h2>
+      ${(()=>{
+        const thisWeekKey = weekEpoch;
+        const lastWeekKey = addDaysISO(thisWeekKey,-7);
+        const prevWeekKey = addDaysISO(thisWeekKey,-14);
+
+        const weekWorkoutPts = (wk)=> entries.filter(e=>e.date>=wk && e.date<addDaysISO(wk,7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
+
+        const tw = weekWorkoutPts(thisWeekKey);
+        const lw = weekWorkoutPts(lastWeekKey);
+        const pw = weekWorkoutPts(prevWeekKey);
+
+        // month compare (workout points)
+        const thisMonth = monthKey(todayISO());
+        const d0 = new Date(thisMonth+"-01T00:00:00");
+        const lastMonthDate = new Date(d0); lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
+        const lastMonth = lastMonthDate.toISOString().slice(0,7);
+
+        const monthWorkoutPts = (mk)=> entries.filter(e=>(e.date||"").slice(0,7)===mk).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
+
+        const tm = monthWorkoutPts(thisMonth);
+        const lm = monthWorkoutPts(lastMonth);
+
+        // weekend compare (workout points) - Sat+Sun blocks by Saturday date
+        function weekendKeyFromDate(dateISO){
+          const d=new Date(dateISO+"T00:00:00");
+          const g=d.getDay(); // 0 Sun .. 6 Sat
+          const sat = new Date(d);
+          sat.setDate(sat.getDate() + (6-g)); // move to Sat of that week
+          sat.setHours(0,0,0,0);
+          return sat.toISOString().slice(0,10); // Saturday
+        }
+        const weekendPtsByKey={};
+        (entries||[]).forEach(e=>{
+          const dk=(e.date||"").slice(0,10);
+          if(!dk) return;
+          const wd= new Date(dk+"T00:00:00").getDay();
+          if(wd!==6 && wd!==0) return; // Sat or Sun
+          const wk=weekendKeyFromDate(dk);
+          weekendPtsByKey[wk]=(weekendPtsByKey[wk]||0)+minutesToPoints(Number(e.duration)||0);
+        });
+        const weekendKeys = Object.keys(weekendPtsByKey).sort().reverse();
+        const w0 = weekendKeys[0] ? weekendPtsByKey[weekendKeys[0]] : 0;
+        const w1 = weekendKeys[1] ? weekendPtsByKey[weekendKeys[1]] : 0;
+
+        // records (workout points)
+        const byWeek={};
+        (entries||[]).forEach(e=>{
+          const wk=weekStartISO((e.date||"").slice(0,10));
+          byWeek[wk]=(byWeek[wk]||0)+minutesToPoints(Number(e.duration)||0);
+        });
+        let bestWeek={k:null,v:0};
+        Object.entries(byWeek).forEach(([k,v])=>{ if(v>bestWeek.v){ bestWeek={k,v}; } });
+
+        return `
+          <div class="list-row"><div style="flex:1;">🏋️ Workout points — this week</div><div class="badge-num">${tw}</div></div>
+          <div class="list-row"><div style="flex:1;">Last week</div><div class="badge-num">${lw}</div></div>
+          <div class="list-row"><div style="flex:1;">Week before</div><div class="badge-num">${pw}</div></div>
+          <div class="list-row"><div style="flex:1;">Weekend (most recent)</div><div class="badge-num">${w0}</div></div>
+          <div class="list-row"><div style="flex:1;">Weekend before</div><div class="badge-num">${w1}</div></div>
+          <div class="list-row"><div style="flex:1;">This month</div><div class="badge-num">${tm}</div></div>
+          <div class="list-row"><div style="flex:1;">Last month</div><div class="badge-num">${lm}</div></div>
+          <div class="list-row"><div style="flex:1;">🏆 Record to beat (best workout week)</div><div class="badge-num">${bestWeek.v}${bestWeek.k?` <span class="small" style="opacity:.8;">(${bestWeek.k})</span>`:""}</div></div>
+        `;
+      })()}
+    </div>
+
+
     <div class="card">
       <h2>➕ Add Workout</h2>
 
@@ -1168,10 +1260,10 @@ function renderWorkout(){
         <option value="Rowing">Rowing</option>
         <option value="Stairmaster">Stairmaster</option>
         <option value="Cycling">Cycling</option>
+        <option value="Running">Running</option>
         <option value="Strength">Strength</option>
         <option value="Circuit">Circuit</option>
-        <option value="Yoga">Yoga</option>
-        <option value="Core">Core</option>        <option value="Walk">Walk</option>        <option value="Other">Other…</option>
+        <option value="Yoga">Yoga</option>        <option value="Walk">Walk</option>        <option value="Other">Other…</option>
       </select>
 
       <div id="wCatOtherWrap" class="hidden">
@@ -1299,7 +1391,7 @@ function renderWorkout(){
     const cat = (rec.category||"").toLowerCase();
     const isYoga = cat.match(/yoga|stretch/);
     const isStrength = cat.match(/strength|kettlebell|kb|push/);
-    const isCardio = cat.match(/cardio|row|cycle|run|bike|stair|stairs|climb|walk/);
+    const isCardio = cat.match(/cardio|row|cycle|running|bike|stair|stairs|climb/);
 
     // long term
     longTermProg.floors = (longTermProg.floors||0)+floorsVal;
@@ -1314,7 +1406,7 @@ function renderWorkout(){
     // monthly
     monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
     monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
-    monthlyProg.distanceKm = (monthlyProg.distanceKm||0)+(/walk|run/.test(cat)?kmVal:0);
+    monthlyProg.walkKm = (monthlyProg.walkKm||0)+(/walk/.test(cat)?kmVal:0);
     if(isYoga){ /* monthly yoga per-day counting */
     monthlyProg.pushups=(monthlyProg.pushups||0)+pushupsVal; }
 
@@ -1322,7 +1414,7 @@ function renderWorkout(){
     if(isStrength){ /* per-day counting */ }
     if(isCardio){ /* per-day counting */ }
     weeklyProg.floors = (weeklyProg.floors||0)+floorsVal;
-    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/walk|run|row|cycle|bike|cycling/.test(cat)?kmVal:0);
+    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/running|row|cycle|bike|cycling/.test(cat)?kmVal:0);
 
     // weekend
     weekendProg.swings=(weekendProg.swings||0)+swingsVal;
