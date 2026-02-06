@@ -431,7 +431,7 @@ recomputeSessionCounters();
 
 // scoring
 function calcStrengthDensity(entry){
-  const reps = (parseFloat(entry.reps)||0) + (parseFloat(entry.pushups)||0) + (parseFloat(entry.swings)||0);
+  const reps = (parseFloat(entry.reps)||0)  + (parseFloat(entry.swings)||0);
   const mins = parseFloat(entry.duration)||0;
   if(!reps || !mins) return null;
   return Math.round((reps / mins)*10)/10;
@@ -640,9 +640,16 @@ function resetWeekend(){
 // OVERVIEW
 function renderOverview(){
   const wrap=document.getElementById("screen-overview");
-  const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal}=calcWeekComponents(weekEpoch);
-  const lastWeekTotal=lastWeekSnapshot.total||0;
-  const lastWeek = (lastWeekSnapshot && lastWeekSnapshot.ts) ? calcWeekComponents(lastWeekSnapshot.ts) : null;
+
+  // This week
+  const thisWeek = calcWeekComponents(weekEpoch);
+  const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal} = thisWeek;
+
+  // Last week = the 7 days before the current weekEpoch (Monday→Sunday)
+  const lastWeekStart = addDaysISO(weekEpoch,-7);
+  const lastWeek = calcWeekComponents(lastWeekStart);
+  const lastWeekTotal = lastWeek.total || 0;
+
   const diff=thisWeekTotal-lastWeekTotal;
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
 
@@ -1376,10 +1383,7 @@ function renderWorkout(){
 <label class="input-label">Duration (min)</label>
       <input class="input" id="wDur" inputmode="numeric"/>
 
-      <label class="input-label">Distance km</label>
-      <input class="input" id="wKm" inputmode="decimal"/>
-
-      <label class="input-label">Distance miles</label>
+<label class="input-label">Distance miles</label>
       <input class="input" id="wMiles" inputmode="decimal"/>
 
       <label class="input-label">Floors climbed</label>
@@ -1388,20 +1392,7 @@ function renderWorkout(){
       <label class="input-label">KB Swings</label>
       <input class="input" id="wSwings" inputmode="numeric"/>
 
-      <label class="input-label">Plank sec</label>
-      <input class="input" id="wPlank" inputmode="numeric"/>
-
-      <label class="input-label">Push-ups</label>
-      <input class="input" id="wPushups" inputmode="numeric"/>
-
-      <label class="input-label">Total reps</label>
-      <input class="input" id="wReps" inputmode="numeric"/>
-
-      <label class="input-label">Circuit exercises</label>
-      <input class="input" id="wCircuit" inputmode="numeric"/>
-
-
-      <label class="input-label">Circuit exercises</label>
+<label class="input-label">Circuit exercises</label>
       <input class="input" id="wCircuitEx" inputmode="numeric"/>
 
       <label class="input-label">Notes</label>
@@ -1425,14 +1416,9 @@ function renderWorkout(){
             <div style="flex:1;">
               <div style="font-weight:600;">${e.date} • ${e.category||""} <span class="badge-num" style="margin-left:8px;">${minutesToPoints(Number(e.duration)||0)} pts</span></div>
               <div class="small">
-                ${e.duration?`⏱ ${e.duration} min `:""}
-                ${e.km?`📏 ${e.km} km `:""}
-                ${e.miles?`🛣 ${e.miles} mi `:""}
+                ${e.duration?`⏱ ${e.duration} min `:""} ${e.miles?`🛣 ${e.miles} mi `:""}
                 ${e.floors?`🧗 ${e.floors} floors `:""}
-                ${e.swings?`💪 ${e.swings} swings `:""}
-                ${e.plank?`🧘 ${e.plank} sec plank `:""}
-                ${e.pushups?`🧱 ${e.pushups} push-ups `:""}
-                ${e.reps?`🔁 ${e.reps} reps `:""}${e.circuitEx?`🧩 ${e.circuitEx} circuit ex `:""} ${calcStrengthDensity(e)?`⚡ ${calcStrengthDensity(e)} reps/min`:""}
+                ${e.swings?`💪 ${e.swings} swings `:""}  ${e.circuitEx?`🧩 ${e.circuitEx} circuit ex `:""} ${calcStrengthDensity(e)?`⚡ ${calcStrengthDensity(e)} reps/min`:""}
               </div>
               ${e.notes?`<div class="small">${e.notes}</div>`:""}
             </div>
@@ -1476,23 +1462,16 @@ function renderWorkout(){
       localStorage.last_cat = val; return val;
     })(),
       duration:wrap.querySelector("#wDur").value.trim(),
-      km:wrap.querySelector("#wKm").value.trim(),
+      km:"", // km field removed from UI; keep for backward compatibility
       miles:wrap.querySelector("#wMiles").value.trim(),
       floors:wrap.querySelector("#wFloors").value.trim(),
       swings:wrap.querySelector("#wSwings").value.trim(),
-      plank:wrap.querySelector("#wPlank").value.trim(),
-      pushups:wrap.querySelector("#wPushups").value.trim(),
-      reps:wrap.querySelector("#wReps").value.trim(),
       circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
       notes:wrap.querySelector("#wNotes").value.trim()
     };
     entries=[rec,...entries];
-
-    const kmVal = (parseFloat(rec.km)||0) + (parseFloat(rec.miles)||0)*1.60934;
     const floorsVal = parseFloat(rec.floors)||0;
     const swingsVal = parseFloat(rec.swings)||0;
-    const repsVal = parseFloat(rec.reps)||0;
-    const plankVal = parseFloat(rec.plank)||0;
     const circuitExVal = parseFloat(rec.circuitEx)||0;
     const pushupsVal = parseFloat(rec.pushups)||0;
     const cat = (rec.category||"").toLowerCase();
