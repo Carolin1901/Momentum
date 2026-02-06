@@ -386,7 +386,7 @@ let whyDoingThis=lsGet("why_doing_this","");
 let lowEnergy=lsGet("low_energy",false);
 let unlocked=lsGet("unlocked",{}); // {key:true}
 
-let longTermProg=lsGet("longTermProg",{floors:0,totalKm:0,cyclingKm:0,rowingKm:0,reps:0,circuitEx:0});
+let longTermProg=lsGet("longTermProg",{floors:0,totalKm:0,cyclingKm:0,rowingKm:0,reps:0,circuitEx:0, footKm:0});
 // migrate older versions
 if(longTermProg && typeof longTermProg==="object"){
   if(longTermProg.distanceKm!=null && longTermProg.totalKm==null){ longTermProg.totalKm = longTermProg.distanceKm; }
@@ -399,7 +399,7 @@ if(longTermProg && typeof longTermProg==="object"){
 let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,distanceKm:0,walkKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
 if(monthlyProg && typeof monthlyProg==="object"){ if(monthlyProg.distanceKm==null) monthlyProg.distanceKm=0; if(monthlyProg.walkKm==null) monthlyProg.walkKm=0; }
 
-let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0});
+let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0, footKm:0});
 if(weeklyProg && typeof weeklyProg==="object"){ if(weeklyProg.rowingKm==null) weeklyProg.rowingKm=0; }
 
 let weekendProg=lsGet("weekendProg",{swings:0,distanceKm:0,footKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0});
@@ -1117,34 +1117,129 @@ function renderLifestyle(){
 function renderWorkout(){
   const wrap=document.getElementById("screen-workout");
 
+  // --- Challenge counters computed from your workout log (for correct counting) ---
+  function catLower(e){ return String(e.category||"").toLowerCase(); }
+  function num(v){ const n=parseFloat(v); return isFinite(n)?n:0; }
+  function entryMiles(e){
+    // Use whichever the user entered; miles field is miles, km field is km.
+    return num(e.miles) + kmToMiles(num(e.km));
+  }
+  function isStrengthCat(c){ return /(strength|kettlebell|kb|push|circuit)/.test(c); }
+  function isCardioCat(c){ return /(cardio|rowing|row|cycling|cycle|bike|running|stairmaster|stair|stairs)/.test(c); }
+  function isYogaCat(c){ return /(yoga|stretch)/.test(c); }
+  function isWalkCat(c){ return /(walk)/.test(c); }
+  function isRunCat(c){ return /(running)/.test(c); }
+  function isRowCat(c){ return /(row)/.test(c); }
+  function isCycleCat(c){ return /(cycling|cycle|bike)/.test(c); }
+  function isStairCat(c){ return /(stairmaster|stair|stairs)/.test(c); }
+
+  function inWeek(dateISO, weekStartISO){
+    return dateISO>=weekStartISO && dateISO<addDaysISO(weekStartISO,7);
+  }
+  function currentMonthKey(){ return todayISO().slice(0,7); }
+  function inMonth(dateISO, mk){ return (dateISO||"").slice(0,7)===mk; }
+
+  // Weekend range: Sat + Sun of current weekEpoch
+  const we = new Date((weekEpoch||mondayOfThisWeekISO())+"T00:00:00");
+  const sat = new Date(we); sat.setDate(sat.getDate()+5); const satKey=sat.toISOString().slice(0,10);
+  const sun = new Date(we); sun.setDate(sun.getDate()+6); const sunKey=sun.toISOString().slice(0,10);
+  function inWeekend(dateISO){ return dateISO===satKey || dateISO===sunKey; }
+
+  const mk = currentMonthKey();
+
+  // --- LONG TERM ---
+  let ltFloors=0, ltCycleMi=0, ltRowMi=0, ltTotalMi=0, ltCircuit=0;
+  (entries||[]).forEach(e=>{
+    const d=(e.date||"").slice(0,10); if(!d) return;
+    const c=catLower(e);
+    const mi=entryMiles(e);
+    ltFloors += num(e.floors);
+    ltCircuit += num(e.circuitEx);
+    if(isCycleCat(c)) ltCycleMi += mi;
+    if(isRowCat(c)) ltRowMi += mi;
+    if(isCycleCat(c) || isRowCat(c) || isWalkCat(c) || isRunCat(c)) ltTotalMi += mi;
+  });
+
+  // --- MONTHLY ---
+  let moSwings=0, moCycleMi=0, moWalkMi=0, moYogaSessions=0, moCircuit=0;
+  (entries||[]).forEach(e=>{
+    const d=(e.date||"").slice(0,10); if(!d || !inMonth(d,mk)) return;
+    const c=catLower(e);
+    const mi=entryMiles(e);
+    moSwings += num(e.swings);
+    moCircuit += num(e.circuitEx);
+    if(isCycleCat(c)) moCycleMi += mi;
+    if(isWalkCat(c))  moWalkMi  += mi;
+    if(isYogaCat(c))  moYogaSessions += 1; // per yoga entry
+  });
+
+  // --- WEEKLY ---
+  const strengthDays=new Set(), cardioDays=new Set(), yogaDays=new Set();
+  let wkRunMi=0, wkRowMi=0, wkCircuit=0;
+  (entries||[]).forEach(e=>{
+    const d=(e.date||"").slice(0,10); if(!d || !inWeek(d,weekEpoch)) return;
+    const c=catLower(e);
+    const mi=entryMiles(e);
+    wkCircuit += num(e.circuitEx);
+    if(isStrengthCat(c)) strengthDays.add(d);
+    if(isYogaCat(c)) yogaDays.add(d);
+    if(isCardioCat(c)) cardioDays.add(d); // includes rowing/cycling/running/stairmaster
+    if(isRunCat(c)) wkRunMi += mi;
+    if(isRowCat(c)) wkRowMi += mi;
+  });
+
+  // --- WEEKEND ---
+  const weekendYogaDays=new Set();
+  let weRunMi=0, weAllMi=0, weCircuit=0, weStrengthOnSun=0;
+  (entries||[]).forEach(e=>{
+    const d=(e.date||"").slice(0,10); if(!d || !inWeekend(d)) return;
+    const c=catLower(e);
+    const mi=entryMiles(e);
+    weCircuit += num(e.circuitEx);
+    // Distance Dash includes cycling/rowing/walking/running
+    if(isCycleCat(c) || isRowCat(c) || isWalkCat(c) || isRunCat(c)) weAllMi += mi;
+    // Half marathon counts running only (per your spec)
+    if(isRunCat(c)) weRunMi += mi;
+    if(isYogaCat(c)) weekendYogaDays.add(d);
+    if(d===sunKey && isStrengthCat(c)) weStrengthOnSun=1;
+  });
+
+
+  
   const longTermList=[
-    {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, longTermProg.floors||0)},
-    {label:"🚴 Emerald Rider (750 miles cycling)", goal:1207.0050, value:Math.min(1207.0050, longTermProg.cyclingKm||0), unit:"km"},
-    {label:"🚶 Year of Movement (1,500 miles total)", goal:2414.0100, value:Math.min(2414.0100, longTermProg.totalKm||0), unit:"km"},
-    {label:"🚣 Steady Oars (500 miles rowing)", goal:804.6700, value:Math.min(804.6700, longTermProg.rowingKm||0), unit:"km"},
-    {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, longTermProg.circuitEx||0)}
+    {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, ltFloors)},
+    {label:"🚴 Emerald Rider (750 miles cycling)", goal:750, value:Math.min(750, Math.round(ltCycleMi*10)/10), unit:"mi"},
+    {label:"🚶 Year of Movement (1,500 miles total)", goal:1500, value:Math.min(1500, Math.round(ltTotalMi*10)/10), unit:"mi"},
+    {label:"🚣 Steady Oars (500 miles rowing)", goal:500, value:Math.min(500, Math.round(ltRowMi*10)/10), unit:"mi"},
+    {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, Math.round(ltCircuit))}
   ];
+
+  
   const monthList=[
-    {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
-    {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
-    {label:"🧱 Great Wall Progress (1,000 push-ups)", goal:1000, value:Math.min(1000, monthlyProg.pushups||0)},
-    {label:"🛰️ Zero-G Mobility (20 yoga/stretch sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
-    {label:"🚶 Monthly Miles (90 miles walking)", goal:144.8406, value:Math.min(144.8406, monthlyProg.walkKm||0), unit:"km"}
+    {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, Math.round(moSwings))},
+    {label:"🚴 Emerald Century (100 miles cycling)", goal:100, value:Math.min(100, Math.round(moCycleMi*10)/10), unit:"mi"},
+    {label:"🛰️ Zero-G Mobility (20 yoga sessions)", goal:20, value:Math.min(20, moYogaSessions)},
+    {label:"🚶 Monthly Miles (90 miles walking)", goal:90, value:Math.min(90, Math.round(moWalkMi*10)/10), unit:"mi"}
   ];
+
+  
   const weekList=[
-    {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), weeklyProg.strengthSessions||0)},
-    {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), weeklyProg.cardioSessions||0)},
-    {label:"🚣 Engine Room (10 miles rowing)", goal:16.0934, value:Math.min(16.0934, weeklyProg.rowingKm||0), unit:"km"},
-    {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), weeklyProg.mobilitySessions||0)},
-    {label:"💪 Core Stability (600 sec plank)", goal:600, value:Math.min(600, weeklyProg.plankSec||0)}
+    {label:"🏃 Marathon (26.2 miles)", goal:26.2, value:Math.min(26.2, Math.round(wkRunMi*10)/10), unit:"mi"},
+    {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), strengthDays.size)},
+    {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), cardioDays.size)},
+    {label:"🚣 Engine Room (10 miles rowing)", goal:10, value:Math.min(10, Math.round(wkRowMi*10)/10), unit:"mi"},
+    {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), yogaDays.size)}
   ];
+
+  
   const weekendList=[
-    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:21.0824, value:Math.min(21.0824, weekendProg.footKm||0), unit:"km"},
-    {label:"📏 Distance Dash (40 miles)", goal:64.3736, value:Math.min(64.3736, weekendProg.distanceKm||0), unit:"km"},
-    {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendProg.yogaSessions||0)},
-    {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, weekendProg.circuitEx||0)},
-    {label:"🔥 Sunday Spark (1 strength session)", goal:1, value:Math.min(1, weekendProg.strengthSessions||0)}
+    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:13.1, value:Math.min(13.1, Math.round(weRunMi*10)/10), unit:"mi"},
+    {label:"📏 Distance Dash (40 miles)", goal:40, value:Math.min(40, Math.round(weAllMi*10)/10), unit:"mi"},
+    {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendYogaDays.size)},
+    {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, Math.round(weCircuit))},
+    {label:"🔥 Sunday Spark (1 strength session)", goal:1, value:Math.min(1, weStrengthOnSun)}
   ];
+
 
   function sectionChallenges(title,list,resetId){
     return `
@@ -1156,7 +1251,7 @@ function renderWorkout(){
           <div style="margin-bottom:16px;">
             <div class="row-between">
               <div class="row-left" style="font-weight:500;">${item.label}</div>
-              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${Math.round(item.value)} / ${item.goal}`}</div>
+              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${(item.unit==="mi") ? (Math.round(item.value*10)/10) : Math.round(item.value)} / ${item.goal}${item.unit==="mi" ? " mi":""}`}</div>
             </div>
             <div class="challenge-bar-bg">
               <div class="challenge-bar-fg" style="width:${pct}%;"></div>
@@ -1303,6 +1398,10 @@ function renderWorkout(){
       <input class="input" id="wReps" inputmode="numeric"/>
 
       <label class="input-label">Circuit exercises</label>
+      <input class="input" id="wCircuit" inputmode="numeric"/>
+
+
+      <label class="input-label">Circuit exercises</label>
       <input class="input" id="wCircuitEx" inputmode="numeric"/>
 
       <label class="input-label">Notes</label>
@@ -1401,36 +1500,7 @@ function renderWorkout(){
     const isStrength = cat.match(/strength|kettlebell|kb|push/);
     const isCardio = cat.match(/cardio|row|cycle|running|bike|stair|stairs|climb/);
 
-    // long term
-    longTermProg.floors = (longTermProg.floors||0)+floorsVal;
-    // distance buckets
-    const isCycling = /cycle|bike|cycling/.test(cat);
-    const isRowing  = /row/.test(cat);
-    longTermProg.totalKm = (longTermProg.totalKm||0) + kmVal;
-    if(isCycling){ longTermProg.cyclingKm = (longTermProg.cyclingKm||0) + kmVal; }
-    if(isRowing){  longTermProg.rowingKm  = (longTermProg.rowingKm||0) + kmVal; }
-    longTermProg.circuitEx = (longTermProg.circuitEx||0)+circuitExVal;
-
-    // monthly
-    monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
-    monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
-    monthlyProg.walkKm = (monthlyProg.walkKm||0)+(/walk/.test(cat)?kmVal:0);
-    if(isYoga){ /* monthly yoga per-day counting */
-    monthlyProg.pushups=(monthlyProg.pushups||0)+pushupsVal; }
-
-    // weekly
-    if(isStrength){ /* per-day counting */ }
-    if(isCardio){ /* per-day counting */ }
-    weeklyProg.floors = (weeklyProg.floors||0)+floorsVal;
-    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/running|row|cycle|bike|cycling/.test(cat)?kmVal:0);
-
-    // weekend
-    weekendProg.swings=(weekendProg.swings||0)+swingsVal;
-    weekendProg.distanceKm=(weekendProg.distanceKm||0)+kmVal;
-    weekendProg.circuitEx=(weekendProg.circuitEx||0)+circuitExVal;
-    if(isYoga){ /* weekend yoga per-day counting */ }
-
-
+    // Challenge progress is computed from your log at render-time (no manual counter increments here).
     recomputeSessionCounters();
     persist();
     showToast(compliment());
