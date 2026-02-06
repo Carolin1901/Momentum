@@ -503,14 +503,25 @@ function computeWorkoutPoints(weekStart){
 function registerActivity(){ /* no-op: used by habit tracking */ }
 
 function computeLifestylePoints(weekStart){
+  // Lifestyle points are based on weekly consistency per habit:
+  // 5/7 days = 5 pts, 7/7 days = 10 pts, otherwise 0.
   const s=new Date(weekStart);
+  const habitKeys=new Set();
+  Object.values(lwDays||{}).forEach(row=>{
+    Object.keys(row||{}).forEach(k=>habitKeys.add(k));
+  });
+
   let total=0;
-  for(let i=0;i<7;i++){
-    const d=new Date(s); d.setDate(d.getDate()+i);
-    const k=d.toISOString().slice(0,10);
-    const row=lwDays[k]||{};
-    Object.values(row).forEach(v=>{if(v)total+=1;});
-  }
+  habitKeys.forEach(k=>{
+    let c=0;
+    for(let i=0;i<7;i++){
+      const d=new Date(s); d.setDate(d.getDate()+i);
+      const dk=d.toISOString().slice(0,10);
+      if(lwDays?.[dk]?.[k]) c++;
+    }
+    if(c>=7) total += 10;
+    else if(c>=5) total += 5;
+  });
   return total;
 }
 function computeHealthPoints(weekStart){
@@ -960,18 +971,15 @@ wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
 // LIFESTYLE (clean weekly grid + date picker)
 function renderLifestyle(){
   const wrap=document.getElementById("screen-lifestyle");
-
   // habits (no alcohol/smoke)
   const HABITS=[
     {key:"sleep7",       label:"Sleep ≥7h 😴"},
-    {key:"water",        label:"Hydration 💧"},
     {key:"steps",        label:"Steps ≥ 10,000 🚶"},
     {key:"outside",      label:"Outside time ≥ 30 min 🌳"},
     {key:"no_sugar",     label:"No added sugar 🍬🚫"},
-    {key:"meditation",   label:"Meditation 🧘"},
     {key:"reading",      label:"Reading 📖"},
-    {key:"declutter30",   label:"Declutter / cleaning ≥ 30 min 🧹"},
-    {key:"yoga_stretch", label:"Stretch / Yoga 🧘‍♀️"}
+    {key:"declutter30",  label:"Declutter / cleaning ≥ 30 min 🧹"},
+    {key:"mindbody",     label:"Meditation OR Yoga/Stretch 🧘"}
   ];
 
   function iso(d){ return d.toISOString().slice(0,10); }
@@ -1013,7 +1021,7 @@ function renderLifestyle(){
   wrap.innerHTML=`
     <div class="card">
       <h2>🌿 Weekly Lifestyle & Mini Challenges</h2>
-      <div class="small">Week: ${weekStart} → ${days[6]} • <span class="badge-num">${totalPts}</span> / ${maxPts} checks</div>
+      <div class="small">Week: ${weekStart} → ${days[6]} • <span class="badge-num">${computeLifestylePoints(weekStart)}</span> pts • <span class="small" style="opacity:.85">${totalPts}/${maxPts} checks</span></div>
       <div class="progress-bg" style="margin-top:10px;"><div class="progress-fg" style="width:${pct}%;"></div></div>
 
       <div class="btn-row" style="margin-top:12px;">
