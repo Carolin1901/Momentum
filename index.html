@@ -6,6 +6,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0f172a" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
 <title>Momentum</title>
 <style>
 :root {
@@ -244,6 +247,23 @@ textarea.input{
 </nav>
 
 <script>
+// ---------------- App stability: updates without data loss ----------------
+// 1) Kill any old service workers that might cache an older version of this app
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+}
+// 2) Versioned refresh: when the app version changes, force a reload (keeps your data)
+const APP_VERSION = "2026-02-08.v2";
+try {
+  const prev = localStorage.getItem("momentum_app_version");
+  if (prev !== APP_VERSION) {
+    localStorage.setItem("momentum_app_version", APP_VERSION);
+    // Reload to pick up the new HTML/JS (data stays in localStorage)
+    location.reload();
+  }
+} catch (e) {}
+// -------------------------------------------------------------------------
+
 // helpers
 function lsGet(key, fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
 function lsSet(key, val){localStorage.setItem(key, JSON.stringify(val));}
@@ -270,6 +290,81 @@ function monthKey(dateISO){
 function mondayOfThisWeekISO(){const d=new Date();const g=d.getDay();const diff=(g===0?-6:1)-g;d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}
 function uid(){return Math.random().toString(36).slice(2,10);}
 function showToast(msg="Saved"){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);}
+
+// Backup helpers (safe: exports ALL Momentum data as one JSON file)
+function buildBackupObject(){
+  return {
+    workout_entries: entries,
+    bp_log: bpLog,
+    h_log: hLog,
+    weight_start: weightStart,
+    weight_goal: weightGoal,
+    week_epoch_snapshot: weekEpoch,
+    weekly_goal: goal,
+    lifestyle_selected_date: lsGet("lifestyle_selected_date", todayISO()),
+    lw_days: lwDays,
+    lw_epoch: lwEpoch,
+    weekly_mantra: weeklyMantra,
+    daily_checkins: checkins,
+    gratitude_log: gratitudeLog,
+    journal_log: journalLog,
+    reflections: reflections,
+    longTermProg: longTermProg,
+    monthlyProg: monthlyProg,
+    weeklyProg: weeklyProg,
+    weekendProg: weekendProg
+  };
+}
+function downloadJSON(filename, obj){
+  const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function exportBackup(){
+  const d = todayISO();
+  downloadJSON(`momentum-backup-${d}.json`, buildBackupObject());
+  showToast("Backup downloaded");
+}
+function importBackupFromFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(Array.isArray(data.workout_entries)) entries = data.workout_entries;
+      if(Array.isArray(data.bp_log)) bpLog = data.bp_log;
+      if(Array.isArray(data.h_log)) hLog = data.h_log;
+      if(typeof data.weight_start !== "undefined") weightStart = data.weight_start;
+      if(typeof data.weight_goal !== "undefined") weightGoal = data.weight_goal;
+      if(typeof data.week_epoch_snapshot !== "undefined") weekEpoch = data.week_epoch_snapshot;
+      if(typeof data.weekly_goal !== "undefined") goal = data.weekly_goal;
+      if(typeof data.lw_days === "object" && data.lw_days) lwDays = data.lw_days;
+      if(typeof data.lw_epoch !== "undefined") lwEpoch = data.lw_epoch;
+      if(typeof data.weekly_mantra !== "undefined") weeklyMantra = data.weekly_mantra || "";
+      if(Array.isArray(data.daily_checkins)) checkins = data.daily_checkins;
+      if(Array.isArray(data.gratitude_log)) gratitudeLog = data.gratitude_log;
+      if(Array.isArray(data.journal_log)) journalLog = data.journal_log;
+      if(Array.isArray(data.reflections)) reflections = data.reflections;
+      if(typeof data.longTermProg === "object" && data.longTermProg) longTermProg = data.longTermProg;
+      if(typeof data.monthlyProg === "object" && data.monthlyProg) monthlyProg = data.monthlyProg;
+      if(typeof data.weeklyProg === "object" && data.weeklyProg) weeklyProg = data.weeklyProg;
+      if(typeof data.weekendProg === "object" && data.weekendProg) weekendProg = data.weekendProg;
+
+      persist();
+      showToast("Backup restored");
+      const active = document.querySelector('.nav-btn.active')?.getAttribute('data-target') || "overview";
+      showScreen(active);
+    } catch(e){
+      showToast("Backup import failed");
+    }
+  };
+  reader.readAsText(file);
+}
 
 function escapeHtml(str){
   return (str||"").replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
@@ -690,6 +785,15 @@ function renderOverview(){
     <div class="card">
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
+      <div class="small">
+        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
+        ${
+          diff>0?` • ▲ +${diff}`:
+          diff<0?` • ▼ ${diff}`:
+          ` • same`
+        }
+      </div>
+      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
@@ -781,6 +885,18 @@ function renderHealth(){
   }
 
   wrap.innerHTML=`
+    <div class="card">
+      <h2>🧷 Backup</h2>
+      <div class="small">Download a JSON backup anytime. Restoring it brings back all your logs and settings.</div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn" id="exportBackupBtn">Download backup</button>
+        <label class="btn" style="cursor:pointer;">
+          Restore backup
+          <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
+        </label>
+      </div>
+    </div>
+
     
 <div class="card">
   <h2>🎯 Weight Goal</h2>
@@ -964,6 +1080,16 @@ wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
       renderHealth();
     };
   });
+  // Backup buttons
+  const eb = wrap.querySelector("#exportBackupBtn");
+  if(eb) eb.onclick = ()=> exportBackup();
+  const ib = wrap.querySelector("#importBackupFile");
+  if(ib) ib.onchange = (ev)=>{
+    const f = ev.target.files && ev.target.files[0];
+    if(f) importBackupFromFile(f);
+    ev.target.value = "";
+  };
+
 }
 
 // LIFESTYLE (clean weekly grid + date picker)
@@ -1667,9 +1793,6 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 showScreen("overview");
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./service-worker.js');
-}
 </script>
 </body>
 </html>
