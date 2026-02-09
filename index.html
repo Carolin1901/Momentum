@@ -248,39 +248,6 @@ textarea.input{
 
 <script>
 // ---------------- App stability: updates without data loss ----------------
-// 1) Kill any old service workers that might cache an older version of this app
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const reg = await navigator.serviceWorker.register("./service-worker.js");
-
-      // If a new SW is waiting, we can prompt and reload
-      function promptRefresh() {
-        // Use your existing toast if you want; this is a simple confirm:
-        const ok = confirm("Update available. Reload now?");
-        if (ok) window.location.reload();
-      }
-
-      // New SW found
-      reg.addEventListener("updatefound", () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed") {
-            // If there is an existing controller, this is an update
-            if (navigator.serviceWorker.controller) promptRefresh();
-          }
-        });
-      });
-
-      // Check for updates each time the app opens
-      reg.update();
-    } catch (e) {
-      // no-op
-    }
-  });
-}
-
 // 2) Versioned refresh: when the app version changes, force a reload (keeps your data)
 const APP_VERSION = "2026-02-08.v2";
 try {
@@ -292,6 +259,32 @@ try {
   }
 } catch (e) {}
 // -------------------------------------------------------------------------
+// PWA install + stable updates: register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./service-worker.js');
+      // Check for updates when app opens
+      reg.update();
+
+      // If a new SW is waiting, activate it and reload once
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            showToast('Updating…');
+            setTimeout(() => location.reload(), 600);
+          }
+        });
+      });
+    } catch (e) {}
+  });
+}
 
 // helpers
 function lsGet(key, fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
@@ -814,6 +807,15 @@ function renderOverview(){
     <div class="card">
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
+      <div class="small">
+        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
+        ${
+          diff>0?` • ▲ +${diff}`:
+          diff<0?` • ▼ ${diff}`:
+          ` • same`
+        }
+      </div>
+      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
