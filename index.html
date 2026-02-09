@@ -807,15 +807,6 @@ function renderOverview(){
     <div class="card">
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
-      <div class="small">
-        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
-        ${
-          diff>0?` • ▲ +${diff}`:
-          diff<0?` • ▼ ${diff}`:
-          ` • same`
-        }
-      </div>
-      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
