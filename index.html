@@ -249,9 +249,38 @@ textarea.input{
 <script>
 // ---------------- App stability: updates without data loss ----------------
 // 1) Kill any old service workers that might cache an older version of this app
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./service-worker.js');
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const reg = await navigator.serviceWorker.register("./service-worker.js");
+
+      // If a new SW is waiting, we can prompt and reload
+      function promptRefresh() {
+        // Use your existing toast if you want; this is a simple confirm:
+        const ok = confirm("Update available. Reload now?");
+        if (ok) window.location.reload();
+      }
+
+      // New SW found
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed") {
+            // If there is an existing controller, this is an update
+            if (navigator.serviceWorker.controller) promptRefresh();
+          }
+        });
+      });
+
+      // Check for updates each time the app opens
+      reg.update();
+    } catch (e) {
+      // no-op
+    }
+  });
 }
+
 // 2) Versioned refresh: when the app version changes, force a reload (keeps your data)
 const APP_VERSION = "2026-02-08.v2";
 try {
