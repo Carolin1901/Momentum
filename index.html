@@ -249,8 +249,8 @@ textarea.input{
 <script>
 // ---------------- App stability: updates without data loss ----------------
 // 1) Kill any old service workers that might cache an older version of this app
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./service-worker.js');
 }
 // 2) Versioned refresh: when the app version changes, force a reload (keeps your data)
 const APP_VERSION = "2026-02-08.v2";
