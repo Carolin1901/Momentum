@@ -1,5 +1,17 @@
-const CACHE = "momentum-cache-v1";
-const CORE = ["./", "./index.html", "./manifest.json"];
+// Momentum PWA Service Worker (stable updates)
+// Bump CACHE on every release to force fresh assets
+const CACHE = "momentum-cache-v2026-02-09";
+const CORE = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./service-worker.js",
+  "./apple-touch-icon.png",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/maskable-192.png",
+  "./icons/maskable-512.png"
+];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(CORE)));
@@ -14,17 +26,12 @@ self.addEventListener("activate", (event) => {
   })());
 });
 
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
-});
-
+// Network-first for navigations/HTML so updates show up immediately
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
-
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for HTML/navigations so updates show
   if (req.mode === "navigate" || (req.headers.get("accept") || "").includes("text/html")) {
     event.respondWith((async () => {
       try {
@@ -33,14 +40,12 @@ self.addEventListener("fetch", (event) => {
         cache.put("./index.html", fresh.clone());
         return fresh;
       } catch (e) {
-        const cached = await caches.match("./index.html");
-        return cached || caches.match("./");
+        return (await caches.match("./index.html")) || (await caches.match("./"));
       }
     })());
     return;
   }
 
-  // Cache-first for assets
   event.respondWith((async () => {
     const cached = await caches.match(req);
     if (cached) return cached;
