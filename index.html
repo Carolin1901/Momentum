@@ -1655,33 +1655,6 @@ function renderMotivation(){
       <button class="btn primary" id="saveMantraBtn">Save Mantra</button>
     </div>
 
-    
-
-    <div class="card">
-      <h2>✅ Daily Check-In</h2>
-      
-      <div class="small" style="margin-bottom:6px;">Energy</div>
-      <div class="btn-row" id="energyBtns" style="gap:6px;">
-        ${["😴","😐","🙂","😄","⚡"].map(e=>`<button class="btn" data-energy="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
-      </div>
-
-      <div class="small" style="margin:10px 0 6px;">Mood</div>
-      <div class="btn-row" id="moodBtns" style="gap:6px;">
-        ${["😞","😐","🙂","😄","🔥"].map(e=>`<button class="btn" data-mood="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
-      </div>
-
-      <input class="input" id="checkWin" placeholder="One-line win"/>
-      <button class="btn primary" id="saveCheckinBtn">Save</button>
-      ${recentCheckins.map(c=>`
-        <div class="list-row">
-          <div style="flex:1">
-            <div class="small">${escapeHtml(c.date)}</div>
-            <div>${escapeHtml(c.win)}</div>
-          </div>
-          <button class="btn danger" data-del-check="${c.id}">🗑️</button>
-        </div>`).join("")}
-    </div>
-
     <div class="card">
       <h2>🙏 Gratitude</h2>
       <input class="input" id="gratText"/>
