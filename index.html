@@ -6,9 +6,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
 <link rel="manifest" href="manifest.json" />
 <meta name="theme-color" content="#0f172a" />
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
 <title>Momentum</title>
 <style>
 :root {
@@ -247,49 +244,14 @@ textarea.input{
 </nav>
 
 <script>
-// ---------------- App stability: updates without data loss ----------------
-// 2) Versioned refresh: when the app version changes, force a reload (keeps your data)
-const APP_VERSION = "2026-02-08.v2";
-try {
-  const prev = localStorage.getItem("momentum_app_version");
-  if (prev !== APP_VERSION) {
-    localStorage.setItem("momentum_app_version", APP_VERSION);
-    // Reload to pick up the new HTML/JS (data stays in localStorage)
-    location.reload();
-  }
-} catch (e) {}
-// -------------------------------------------------------------------------
-// PWA install + stable updates: register service worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('./service-worker.js');
-      // Check for updates when app opens
-      reg.update();
-
-      // If a new SW is waiting, activate it and reload once
-      if (reg.waiting) {
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-
-      reg.addEventListener('updatefound', () => {
-        const nw = reg.installing;
-        if (!nw) return;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            showToast('Updating…');
-            setTimeout(() => location.reload(), 600);
-          }
-        });
-      });
-    } catch (e) {}
-  });
-}
-
 // helpers
 function lsGet(key, fallback){try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback;}catch(e){return fallback;}}
 function lsSet(key, val){localStorage.setItem(key, JSON.stringify(val));}
-function todayISO(){return new Date().toISOString().slice(0,10);}
+function todayISO(){
+  const d=new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,10);
+}
 
 function weekStartISO(dateISO){
   const d = new Date((dateISO||todayISO())+"T00:00:00");
@@ -312,81 +274,6 @@ function monthKey(dateISO){
 function mondayOfThisWeekISO(){const d=new Date();const g=d.getDay();const diff=(g===0?-6:1)-g;d.setDate(d.getDate()+diff);d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}
 function uid(){return Math.random().toString(36).slice(2,10);}
 function showToast(msg="Saved"){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);}
-
-// Backup helpers (safe: exports ALL Momentum data as one JSON file)
-function buildBackupObject(){
-  return {
-    workout_entries: entries,
-    bp_log: bpLog,
-    h_log: hLog,
-    weight_start: weightStart,
-    weight_goal: weightGoal,
-    week_epoch_snapshot: weekEpoch,
-    weekly_goal: goal,
-    lifestyle_selected_date: lsGet("lifestyle_selected_date", todayISO()),
-    lw_days: lwDays,
-    lw_epoch: lwEpoch,
-    weekly_mantra: weeklyMantra,
-    daily_checkins: checkins,
-    gratitude_log: gratitudeLog,
-    journal_log: journalLog,
-    reflections: reflections,
-    longTermProg: longTermProg,
-    monthlyProg: monthlyProg,
-    weeklyProg: weeklyProg,
-    weekendProg: weekendProg
-  };
-}
-function downloadJSON(filename, obj){
-  const blob = new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-function exportBackup(){
-  const d = todayISO();
-  downloadJSON(`momentum-backup-${d}.json`, buildBackupObject());
-  showToast("Backup downloaded");
-}
-function importBackupFromFile(file){
-  const reader = new FileReader();
-  reader.onload = () => {
-    try{
-      const data = JSON.parse(reader.result);
-      if(Array.isArray(data.workout_entries)) entries = data.workout_entries;
-      if(Array.isArray(data.bp_log)) bpLog = data.bp_log;
-      if(Array.isArray(data.h_log)) hLog = data.h_log;
-      if(typeof data.weight_start !== "undefined") weightStart = data.weight_start;
-      if(typeof data.weight_goal !== "undefined") weightGoal = data.weight_goal;
-      if(typeof data.week_epoch_snapshot !== "undefined") weekEpoch = data.week_epoch_snapshot;
-      if(typeof data.weekly_goal !== "undefined") goal = data.weekly_goal;
-      if(typeof data.lw_days === "object" && data.lw_days) lwDays = data.lw_days;
-      if(typeof data.lw_epoch !== "undefined") lwEpoch = data.lw_epoch;
-      if(typeof data.weekly_mantra !== "undefined") weeklyMantra = data.weekly_mantra || "";
-      if(Array.isArray(data.daily_checkins)) checkins = data.daily_checkins;
-      if(Array.isArray(data.gratitude_log)) gratitudeLog = data.gratitude_log;
-      if(Array.isArray(data.journal_log)) journalLog = data.journal_log;
-      if(Array.isArray(data.reflections)) reflections = data.reflections;
-      if(typeof data.longTermProg === "object" && data.longTermProg) longTermProg = data.longTermProg;
-      if(typeof data.monthlyProg === "object" && data.monthlyProg) monthlyProg = data.monthlyProg;
-      if(typeof data.weeklyProg === "object" && data.weeklyProg) weeklyProg = data.weeklyProg;
-      if(typeof data.weekendProg === "object" && data.weekendProg) weekendProg = data.weekendProg;
-
-      persist();
-      showToast("Backup restored");
-      const active = document.querySelector('.nav-btn.active')?.getAttribute('data-target') || "overview";
-      showScreen(active);
-    } catch(e){
-      showToast("Backup import failed");
-    }
-  };
-  reader.readAsText(file);
-}
 
 function escapeHtml(str){
   return (str||"").replace(/[&<>"']/g, s=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[s]));
@@ -503,7 +390,7 @@ let whyDoingThis=lsGet("why_doing_this","");
 let lowEnergy=lsGet("low_energy",false);
 let unlocked=lsGet("unlocked",{}); // {key:true}
 
-let longTermProg=lsGet("longTermProg",{floors:0,totalKm:0,cyclingKm:0,rowingKm:0,reps:0,circuitEx:0, footKm:0});
+let longTermProg=lsGet("longTermProg",{floors:0,totalKm:0,cyclingKm:0,rowingKm:0,reps:0,circuitEx:0});
 // migrate older versions
 if(longTermProg && typeof longTermProg==="object"){
   if(longTermProg.distanceKm!=null && longTermProg.totalKm==null){ longTermProg.totalKm = longTermProg.distanceKm; }
@@ -516,7 +403,7 @@ if(longTermProg && typeof longTermProg==="object"){
 let monthlyProg=lsGet("monthlyProg",{swings:0,cyclingKm:0,distanceKm:0,walkKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0});
 if(monthlyProg && typeof monthlyProg==="object"){ if(monthlyProg.distanceKm==null) monthlyProg.distanceKm=0; if(monthlyProg.walkKm==null) monthlyProg.walkKm=0; }
 
-let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0, footKm:0});
+let weeklyProg=lsGet("weeklyProg",{strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0,floors:0,steps:0});
 if(weeklyProg && typeof weeklyProg==="object"){ if(weeklyProg.rowingKm==null) weeklyProg.rowingKm=0; }
 
 let weekendProg=lsGet("weekendProg",{swings:0,distanceKm:0,footKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0});
@@ -548,7 +435,7 @@ recomputeSessionCounters();
 
 // scoring
 function calcStrengthDensity(entry){
-  const reps = (parseFloat(entry.reps)||0)  + (parseFloat(entry.swings)||0);
+  const reps = (parseFloat(entry.reps)||0) + (parseFloat(entry.pushups)||0) + (parseFloat(entry.swings)||0);
   const mins = parseFloat(entry.duration)||0;
   if(!reps || !mins) return null;
   return Math.round((reps / mins)*10)/10;
@@ -620,24 +507,22 @@ function computeWorkoutPoints(weekStart){
 function registerActivity(){ /* no-op: used by habit tracking */ }
 
 function computeLifestylePoints(weekStart){
-  // Lifestyle points are based on weekly consistency per habit:
-  // 5/7 days = 5 pts, 7/7 days = 10 pts, otherwise 0.
-  const s=new Date(weekStart);
-  const habitKeys=new Set();
-  Object.values(lwDays||{}).forEach(row=>{
-    Object.keys(row||{}).forEach(k=>habitKeys.add(k));
-  });
+  // Lifestyle scoring (simple + consistent):
+  // Per habit per week:
+  //   0–4 days = 0 pts
+  //   5–6 days = 5 pts
+  //   7 days   = 10 pts
+  const HABIT_KEYS = ["sleep7","steps","outside","no_sugar","reading","mindbody","declutter30"];
+  const s=new Date(weekStart+"T00:00:00");
+  const days=[];
+  for(let i=0;i<7;i++){ const d=new Date(s); d.setDate(d.getDate()+i); days.push(d.toISOString().slice(0,10)); }
 
   let total=0;
-  habitKeys.forEach(k=>{
+  HABIT_KEYS.forEach(k=>{
     let c=0;
-    for(let i=0;i<7;i++){
-      const d=new Date(s); d.setDate(d.getDate()+i);
-      const dk=d.toISOString().slice(0,10);
-      if(lwDays?.[dk]?.[k]) c++;
-    }
-    if(c>=7) total += 10;
-    else if(c>=5) total += 5;
+    days.forEach(dk=>{ if(lwDays?.[dk]?.[k]) c++; });
+    if(c>=7) total+=10;
+    else if(c>=5) total+=5;
   });
   return total;
 }
@@ -745,7 +630,7 @@ function resetMonthly(){
   persist(); showToast("Challenges reset"); renderWorkout();
 }
 function resetWeeklyChal(){
-  weeklyProg={strengthSessions:0,cardioSessions:0,floors:0};
+  weeklyProg={strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0,floors:0,steps:0};
   persist(); showToast("Challenges reset"); renderWorkout();
 }
 function resetWeekend(){
@@ -757,16 +642,9 @@ function resetWeekend(){
 // OVERVIEW
 function renderOverview(){
   const wrap=document.getElementById("screen-overview");
-
-  // This week
-  const thisWeek = calcWeekComponents(weekEpoch);
-  const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal} = thisWeek;
-
-  // Last week = the 7 days before the current weekEpoch (Monday→Sunday)
-  const lastWeekStart = addDaysISO(weekEpoch,-7);
-  const lastWeek = calcWeekComponents(lastWeekStart);
-  const lastWeekTotal = lastWeek.total || 0;
-
+  const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal}=calcWeekComponents(weekEpoch);
+  const lastWeekTotal=lastWeekSnapshot.total||0;
+  const lastWeek = (lastWeekSnapshot && lastWeekSnapshot.ts) ? calcWeekComponents(lastWeekSnapshot.ts) : null;
   const diff=thisWeekTotal-lastWeekTotal;
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
 
@@ -898,18 +776,6 @@ function renderHealth(){
   }
 
   wrap.innerHTML=`
-    <div class="card">
-      <h2>🧷 Backup</h2>
-      <div class="small">Download a JSON backup anytime. Restoring it brings back all your logs and settings.</div>
-      <div class="btn-row" style="margin-top:12px;">
-        <button class="btn" id="exportBackupBtn">Download backup</button>
-        <label class="btn" style="cursor:pointer;">
-          Restore backup
-          <input type="file" id="importBackupFile" accept="application/json" style="display:none;">
-        </label>
-      </div>
-    </div>
-
     
 <div class="card">
   <h2>🎯 Weight Goal</h2>
@@ -1093,49 +959,44 @@ wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
       renderHealth();
     };
   });
-  // Backup buttons
-  const eb = wrap.querySelector("#exportBackupBtn");
-  if(eb) eb.onclick = ()=> exportBackup();
-  const ib = wrap.querySelector("#importBackupFile");
-  if(ib) ib.onchange = (ev)=>{
-    const f = ev.target.files && ev.target.files[0];
-    if(f) importBackupFromFile(f);
-    ev.target.value = "";
-  };
-
 }
 
-// LIFESTYLE (clean weekly grid + date picker)
+// LIFESTYLE (date picker + per-day checkboxes stored by date)
 function renderLifestyle(){
   const wrap=document.getElementById("screen-lifestyle");
-  // habits (no alcohol/smoke)
+
+  // Habits (simplified)
   const HABITS=[
     {key:"sleep7",       label:"Sleep ≥7h 😴"},
-    {key:"steps",        label:"Steps ≥ 10,000 🚶"},
+    {key:"steps",        label:"Steps ≥ 15,000 🚶"},
     {key:"outside",      label:"Outside time ≥ 30 min 🌳"},
     {key:"no_sugar",     label:"No added sugar 🍬🚫"},
     {key:"reading",      label:"Reading 📖"},
-    {key:"declutter30",  label:"Declutter / cleaning ≥ 30 min 🧹"},
-    {key:"mindbody",     label:"Meditation OR Yoga/Stretch 🧘"}
+    {key:"mindbody",     label:"Meditation or Stretch/Yoga 🧘"},
+    {key:"declutter30",  label:"Declutter/Clean 30 min 🧼"}
   ];
 
   function iso(d){ return d.toISOString().slice(0,10); }
-  function parseISO(s){ const d=new Date(s+"T00:00:00"); d.setHours(0,0,0,0); return d; }
+  function parseISO(s){ const d=new Date((s||todayISO())+"T00:00:00"); d.setHours(0,0,0,0); return d; }
   function weekStartFromISO(s){
     const d=parseISO(s);
     const g=d.getDay();
-    const diff=(g===0?-6:1)-g;
+    const diff=(g===0?-6:1)-g; // Monday start
     d.setDate(d.getDate()+diff);
     return iso(d);
   }
-
-  if(!lwEpoch) lwEpoch=mondayOfThisWeekISO();
-  const selectedDate = lsGet("lifestyle_selected_date", todayISO());
-  const weekStart = lwEpoch;
-
   function addDays(isoStr, n){
     const d=parseISO(isoStr); d.setDate(d.getDate()+n); return iso(d);
   }
+
+  // Keep the selected date across re-renders / tab switches
+  let selectedDate = window._lifeSelected || lsGet("life_selected_date", null) || todayISO();
+  if(!selectedDate) selectedDate = todayISO();
+  window._lifeSelected = selectedDate;
+
+  // Week shown is based on the selected date
+  lwEpoch = weekStartFromISO(selectedDate);
+  const weekStart = lwEpoch;
 
   const days=[0,1,2,3,4,5,6].map(i=>addDays(weekStart,i));
   const dayLabels=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
@@ -1147,31 +1008,68 @@ function renderLifestyle(){
     lwDays[dateISO]=lwDays[dateISO]||{};
     lwDays[dateISO][habitKey]=val;
   }
-
   function countHabitWeek(habitKey){
     return days.reduce((s,d)=>s+(getCell(d,habitKey)?1:0),0);
   }
-  const totalPts = HABITS.reduce((s,h)=>s+countHabitWeek(h.key),0);
-  const maxPts = HABITS.length * 7;
-  const pct = Math.min(100, Math.round((totalPts/(maxPts||1))*100));
+  function habitWeekPoints(habitKey){
+    const c=countHabitWeek(habitKey);
+    if(c>=7) return 10;
+    if(c>=5) return 5;
+    return 0;
+  }
+
+  const weekPoints = HABITS.reduce((s,h)=>s+habitWeekPoints(h.key),0);
+  const maxWeekPoints = HABITS.length * 10;
+  const pct = Math.min(100, Math.round((weekPoints/(maxWeekPoints||1))*100));
+
+  // Streak (any habit checked) ending today
+  function anyHabitStreak(){
+    const end = parseISO(todayISO());
+    let cur = new Date(end);
+    let streak=0;
+    for(let i=0;i<365;i++){
+      const dk=iso(cur);
+      const row=lwDays?.[dk]||{};
+      const any = HABITS.some(h=>!!row[h.key]);
+      if(any) streak++;
+      else break;
+      cur.setDate(cur.getDate()-1);
+    }
+    return streak;
+  }
+  const overallStreak = anyHabitStreak();
+
+  const todayKey = todayISO();
+  const todayChecks = HABITS.reduce((s,h)=>s+(lwDays?.[todayKey]?.[h.key]?1:0),0);
+  const selectedChecks = HABITS.reduce((s,h)=>s+(lwDays?.[selectedDate]?.[h.key]?1:0),0);
 
   wrap.innerHTML=`
     <div class="card">
-      <h2>🌿 Weekly Lifestyle & Mini Challenges</h2>
-      <div class="small">Week: ${weekStart} → ${days[6]} • <span class="badge-num">${computeLifestylePoints(weekStart)}</span> pts • <span class="small" style="opacity:.85">${totalPts}/${maxPts} checks</span></div>
-      <div class="progress-bg" style="margin-top:10px;"><div class="progress-fg" style="width:${pct}%;"></div></div>
+      <h2>🌿 Lifestyle</h2>
+      <div class="small">
+        Today: <span class="badge-num">${todayChecks}</span> / ${HABITS.length}
+        • Streak: <span class="badge-num">${overallStreak}</span> days
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="row-between">
+          <div>Weekly lifestyle points</div>
+          <div class="badge-num">${weekPoints} / ${maxWeekPoints}</div>
+        </div>
+        <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
+        <div class="small" style="margin-top:8px;opacity:.85;">Scoring: per habit weekly — 5/7 = 5 pts, 7/7 = 10 pts.</div>
+      </div>
 
       <div class="btn-row" style="margin-top:12px;">
-        <button class="btn" id="prevWeekBtn">←</button>
-        <button class="btn" id="thisWeekBtn">This week</button>
-        <button class="btn" id="nextWeekBtn">→</button>
-        <button class="btn danger" id="resetWeekBtn">Reset week</button>
+        <button class="btn danger" id="resetWeekBtn">Reset this week</button>
       </div>
 
       <div style="margin-top:14px;">
         <label class="input-label">Date</label>
         <input class="input" id="lifeDate" type="date" value="${selectedDate}"/>
-        <div class="small" style="margin-top:-6px;">Tap a habit to toggle it for the selected date.</div>
+        <div class="small" style="margin-top:-6px;">
+          Selected: <span class="badge-num">${selectedChecks}</span> / ${HABITS.length} • Tap a habit to toggle it for the selected date.
+        </div>
       </div>
     </div>
 
@@ -1181,11 +1079,13 @@ function renderLifestyle(){
         const done=countHabitWeek(h.key);
         const isOn=getCell(selectedDate,h.key);
         const p=Math.min(100, Math.round((done/7)*100));
+        const pts=habitWeekPoints(h.key);
+        const ptsHtml = pts>0 ? ` • <span class="badge-num">${pts}pts</span>` : "";
         return `
           <div style="margin-bottom:14px;">
             <div class="row-between" style="align-items:center;">
               <div style="flex:1; font-size:14px;">${h.label}</div>
-              <div class="small" style="margin-right:8px;">${done}/7</div>
+              <div class="small" style="margin-right:8px;">${done}/7${ptsHtml}</div>
               <label style="display:inline-flex;align-items:center;gap:8px;">
                 <input type="checkbox" data-habit="${h.key}" ${isOn?"checked":""} style="transform:scale(1.2);"/>
               </label>
@@ -1194,59 +1094,59 @@ function renderLifestyle(){
           </div>
         `;
       }).join("")}
-      <div class="small">Consistency beats intensity. Even 1 check is momentum.</div>
     </div>
 
     <div class="card">
       <h2>🗓 This week at a glance</h2>
-      <div class="small" style="margin-bottom:10px;">Checks per day</div>
+      <div class="small" style="margin-bottom:10px;">Checks per day (week of ${weekStart})</div>
       ${days.map((d,i)=>{
-        const c=HABITS.reduce((s,h)=>s+(getCell(d,h.key)?1:0),0);
-        return `<div class="list-row"><div style="flex:1;">${dayLabels[i]} • ${d}</div><div class="badge-num">${c}</div></div>`;
+        const row=lwDays?.[d]||{};
+        const c=HABITS.reduce((s,h)=>s+(row[h.key]?1:0),0);
+        const isSel = d===selectedDate;
+        return `<div class="list-row" style="${isSel ? "background:rgba(16,185,129,.08);padding:8px 10px;border-radius:12px;" : ""}">
+          <div style="flex:1;">${dayLabels[i]} • ${d}</div>
+          <div class="badge-num">${c}</div>
+        </div>`;
       }).join("")}
     </div>
   `;
 
-  wrap.querySelector("#lifeDate").onchange=(ev)=>{
-    const v=ev.target.value || todayISO();
-    lsSet("lifestyle_selected_date", v);
-    // snap week to selected date
-    lwEpoch=weekStartFromISO(v);
-    persist();
-    renderLifestyle();
-  };
+  // Date picker: load that day's state (and its week) immediately
+  const dp = wrap.querySelector("#lifeDate");
+  if(dp){
+    dp.onchange=(ev)=>{
+      const v=(ev.target.value || todayISO());
+      window._lifeSelected = v;
+      lsSet("life_selected_date", v);
+      persist();
+      renderLifestyle();
+    };
+  }
 
+  // Toggle habits for the currently selected day
   wrap.querySelectorAll('input[type="checkbox"][data-habit]').forEach(cb=>{
     cb.onchange=()=>{
       const key=cb.getAttribute("data-habit");
-      setCell(selectedDate,key,cb.checked);
-      registerActivity();
+      const dateKey = wrap.querySelector("#lifeDate")?.value || todayISO();
+      setCell(dateKey,key,cb.checked);
+      window._lifeSelected = dateKey;
+      lsSet("life_selected_date", dateKey);
       persist();
       showToast(typeof compliment==="function" ? compliment() : "Saved");
       renderLifestyle();
     };
   });
 
-  wrap.querySelector("#prevWeekBtn").onclick=()=>{
-    const d=parseISO(lwEpoch); d.setDate(d.getDate()-7);
-    lwEpoch=iso(d);
-    persist(); renderLifestyle();
-  };
-  wrap.querySelector("#nextWeekBtn").onclick=()=>{
-    const d=parseISO(lwEpoch); d.setDate(d.getDate()+7);
-    lwEpoch=iso(d);
-    persist(); renderLifestyle();
-  };
-  wrap.querySelector("#thisWeekBtn").onclick=()=>{
-    lwEpoch=mondayOfThisWeekISO();
-    persist(); renderLifestyle();
-  };
-  wrap.querySelector("#resetWeekBtn").onclick=()=>{
-    days.forEach(d=>{ delete lwDays[d]; });
-    persist();
-    showToast("Week reset");
-    renderLifestyle();
-  };
+  // Reset only the currently shown week (based on selected date)
+  const resetBtn = wrap.querySelector("#resetWeekBtn");
+  if(resetBtn){
+    resetBtn.onclick=()=>{
+      days.forEach(d=>{ delete lwDays[d]; });
+      persist();
+      showToast("Week reset");
+      renderLifestyle();
+    };
+  }
 }
 
 
@@ -1254,129 +1154,35 @@ function renderLifestyle(){
 function renderWorkout(){
   const wrap=document.getElementById("screen-workout");
 
-  // --- Challenge counters computed from your workout log (for correct counting) ---
-  function catLower(e){ return String(e.category||"").toLowerCase(); }
-  function num(v){ const n=parseFloat(v); return isFinite(n)?n:0; }
-  function entryMiles(e){
-    // Use whichever the user entered; miles field is miles, km field is km.
-    return num(e.miles) + kmToMiles(num(e.km));
-  }
-  function isStrengthCat(c){ return /(strength|kettlebell|kb|push|circuit)/.test(c); }
-  function isCardioCat(c){ return /(cardio|rowing|row|cycling|cycle|bike|running|stairmaster|stair|stairs)/.test(c); }
-  function isYogaCat(c){ return /(yoga|stretch)/.test(c); }
-  function isWalkCat(c){ return /(walk)/.test(c); }
-  function isRunCat(c){ return /(running)/.test(c); }
-  function isRowCat(c){ return /(row)/.test(c); }
-  function isCycleCat(c){ return /(cycling|cycle|bike)/.test(c); }
-  function isStairCat(c){ return /(stairmaster|stair|stairs)/.test(c); }
-
-  function inWeek(dateISO, weekStartISO){
-    return dateISO>=weekStartISO && dateISO<addDaysISO(weekStartISO,7);
-  }
-  function currentMonthKey(){ return todayISO().slice(0,7); }
-  function inMonth(dateISO, mk){ return (dateISO||"").slice(0,7)===mk; }
-
-  // Weekend range: Sat + Sun of current weekEpoch
-  const we = new Date((weekEpoch||mondayOfThisWeekISO())+"T00:00:00");
-  const sat = new Date(we); sat.setDate(sat.getDate()+5); const satKey=sat.toISOString().slice(0,10);
-  const sun = new Date(we); sun.setDate(sun.getDate()+6); const sunKey=sun.toISOString().slice(0,10);
-  function inWeekend(dateISO){ return dateISO===satKey || dateISO===sunKey; }
-
-  const mk = currentMonthKey();
-
-  // --- LONG TERM ---
-  let ltFloors=0, ltCycleMi=0, ltRowMi=0, ltTotalMi=0, ltCircuit=0;
-  (entries||[]).forEach(e=>{
-    const d=(e.date||"").slice(0,10); if(!d) return;
-    const c=catLower(e);
-    const mi=entryMiles(e);
-    ltFloors += num(e.floors);
-    ltCircuit += num(e.circuitEx);
-    if(isCycleCat(c)) ltCycleMi += mi;
-    if(isRowCat(c)) ltRowMi += mi;
-    if(isCycleCat(c) || isRowCat(c) || isWalkCat(c) || isRunCat(c)) ltTotalMi += mi;
-  });
-
-  // --- MONTHLY ---
-  let moSwings=0, moCycleMi=0, moWalkMi=0, moYogaSessions=0, moCircuit=0;
-  (entries||[]).forEach(e=>{
-    const d=(e.date||"").slice(0,10); if(!d || !inMonth(d,mk)) return;
-    const c=catLower(e);
-    const mi=entryMiles(e);
-    moSwings += num(e.swings);
-    moCircuit += num(e.circuitEx);
-    if(isCycleCat(c)) moCycleMi += mi;
-    if(isWalkCat(c))  moWalkMi  += mi;
-    if(isYogaCat(c))  moYogaSessions += 1; // per yoga entry
-  });
-
-  // --- WEEKLY ---
-  const strengthDays=new Set(), cardioDays=new Set(), yogaDays=new Set();
-  let wkRunMi=0, wkRowMi=0, wkCircuit=0;
-  (entries||[]).forEach(e=>{
-    const d=(e.date||"").slice(0,10); if(!d || !inWeek(d,weekEpoch)) return;
-    const c=catLower(e);
-    const mi=entryMiles(e);
-    wkCircuit += num(e.circuitEx);
-    if(isStrengthCat(c)) strengthDays.add(d);
-    if(isYogaCat(c)) yogaDays.add(d);
-    if(isCardioCat(c)) cardioDays.add(d); // includes rowing/cycling/running/stairmaster
-    if(isRunCat(c)) wkRunMi += mi;
-    if(isRowCat(c)) wkRowMi += mi;
-  });
-
-  // --- WEEKEND ---
-  const weekendYogaDays=new Set();
-  let weRunMi=0, weAllMi=0, weCircuit=0, weStrengthOnSun=0;
-  (entries||[]).forEach(e=>{
-    const d=(e.date||"").slice(0,10); if(!d || !inWeekend(d)) return;
-    const c=catLower(e);
-    const mi=entryMiles(e);
-    weCircuit += num(e.circuitEx);
-    // Distance Dash includes cycling/rowing/walking/running
-    if(isCycleCat(c) || isRowCat(c) || isWalkCat(c) || isRunCat(c)) weAllMi += mi;
-    // Half marathon counts running only (per your spec)
-    if(isRunCat(c)) weRunMi += mi;
-    if(isYogaCat(c)) weekendYogaDays.add(d);
-    if(d===sunKey && isStrengthCat(c)) weStrengthOnSun=1;
-  });
-
-
-  
   const longTermList=[
-    {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, ltFloors)},
-    {label:"🚴 Emerald Rider (750 miles cycling)", goal:750, value:Math.min(750, Math.round(ltCycleMi*10)/10), unit:"mi"},
-    {label:"🚶 Year of Movement (1,500 miles total)", goal:1500, value:Math.min(1500, Math.round(ltTotalMi*10)/10), unit:"mi"},
-    {label:"🚣 Steady Oars (500 miles rowing)", goal:500, value:Math.min(500, Math.round(ltRowMi*10)/10), unit:"mi"},
-    {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, Math.round(ltCircuit))}
+    {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, longTermProg.floors||0)},
+    {label:"🚴 Emerald Rider (750 miles cycling)", goal:1207.0050, value:Math.min(1207.0050, longTermProg.cyclingKm||0), unit:"km"},
+    {label:"🚶 Year of Movement (1,500 miles total)", goal:2414.0100, value:Math.min(2414.0100, longTermProg.totalKm||0), unit:"km"},
+    {label:"🚣 Steady Oars (500 miles rowing)", goal:804.6700, value:Math.min(804.6700, longTermProg.rowingKm||0), unit:"km"},
+    {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, longTermProg.circuitEx||0)}
   ];
-
-  
   const monthList=[
-    {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, Math.round(moSwings))},
-    {label:"🚴 Emerald Century (100 miles cycling)", goal:100, value:Math.min(100, Math.round(moCycleMi*10)/10), unit:"mi"},
-    {label:"🛰️ Zero-G Mobility (20 yoga sessions)", goal:20, value:Math.min(20, moYogaSessions)},
-    {label:"🚶 Monthly Miles (90 miles walking)", goal:90, value:Math.min(90, Math.round(moWalkMi*10)/10), unit:"mi"}
+    {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
+    {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
+    {label:"🧱 Great Wall Progress (1,000 push-ups)", goal:1000, value:Math.min(1000, monthlyProg.pushups||0)},
+    {label:"🛰️ Zero-G Mobility (20 yoga/stretch sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
+    {label:"🚶 Monthly Miles (90 miles walking)", goal:144.8406, value:Math.min(144.8406, monthlyProg.walkKm||0), unit:"km"}
   ];
-
-  
   const weekList=[
-    {label:"🏃 Marathon (26.2 miles)", goal:26.2, value:Math.min(26.2, Math.round(wkRunMi*10)/10), unit:"mi"},
-    {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), strengthDays.size)},
-    {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), cardioDays.size)},
-    {label:"🚣 Engine Room (10 miles rowing)", goal:10, value:Math.min(10, Math.round(wkRowMi*10)/10), unit:"mi"},
-    {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), yogaDays.size)}
+    {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), weeklyProg.strengthSessions||0)},
+    {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), weeklyProg.cardioSessions||0)},
+    {label:"🚣 Engine Room (10 miles rowing)", goal:16.0934, value:Math.min(16.0934, weeklyProg.rowingKm||0), unit:"km"},
+    {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), weeklyProg.mobilitySessions||0)},
+    {label:"🚶 Step Surge (105,000 steps)", goal:105000, value:Math.min(105000, weeklyProg.steps||0)},
+    {label:"💪 Core Stability (600 sec plank)", goal:600, value:Math.min(600, weeklyProg.plankSec||0)}
   ];
-
-  
   const weekendList=[
-    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:13.1, value:Math.min(13.1, Math.round(weRunMi*10)/10), unit:"mi"},
-    {label:"📏 Distance Dash (40 miles)", goal:40, value:Math.min(40, Math.round(weAllMi*10)/10), unit:"mi"},
-    {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendYogaDays.size)},
-    {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, Math.round(weCircuit))},
-    {label:"🔥 Sunday Spark (1 strength session)", goal:1, value:Math.min(1, weStrengthOnSun)}
+    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:21.0824, value:Math.min(21.0824, weekendProg.footKm||0), unit:"km"},
+    {label:"📏 Distance Dash (40 miles)", goal:64.3736, value:Math.min(64.3736, weekendProg.distanceKm||0), unit:"km"},
+    {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendProg.yogaSessions||0)},
+    {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, weekendProg.circuitEx||0)},
+    {label:"🔥 Sunday Spark (1 strength session)", goal:1, value:Math.min(1, weekendProg.strengthSessions||0)}
   ];
-
 
   function sectionChallenges(title,list,resetId){
     return `
@@ -1388,7 +1194,7 @@ function renderWorkout(){
           <div style="margin-bottom:16px;">
             <div class="row-between">
               <div class="row-left" style="font-weight:500;">${item.label}</div>
-              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${(item.unit==="mi") ? (Math.round(item.value*10)/10) : Math.round(item.value)} / ${item.goal}${item.unit==="mi" ? " mi":""}`}</div>
+              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${Math.round(item.value)} / ${item.goal}`}</div>
             </div>
             <div class="challenge-bar-bg">
               <div class="challenge-bar-fg" style="width:${pct}%;"></div>
@@ -1403,6 +1209,13 @@ function renderWorkout(){
 
   const nowWeek = calcWeekComponents(weekEpoch);
   const pctWeek = Math.min(100,Math.round((nowWeek.total/(goal||1))*100));
+
+  // show only the most recent 7 days in the workout list
+  const cutoffISO = addDaysISO(todayISO(), -6);
+  const recentEntries = entries
+    .filter(e => (e.date||"") >= cutoffISO)
+    .slice()
+    .sort((a,b)=> (b.date||"").localeCompare(a.date||""));
 
   wrap.innerHTML=`
     <div class="card">
@@ -1495,6 +1308,7 @@ function renderWorkout(){
 
       <label class="input-label">Category</label>
       <select class="input" id="wCatSelect">
+        <option value="Steps">Steps</option>
         <option value="Kettlebell">Kettlebell</option>
         <option value="Cardio">Cardio</option>
         <option value="Rowing">Rowing</option>
@@ -1510,10 +1324,19 @@ function renderWorkout(){
         <label class="input-label">Custom category</label>
         <input class="input" id="wCatOther" placeholder="Type your category"/>
       </div>
+
+      <div id="wStepsWrap" class="hidden">
+        <label class="input-label">Steps</label>
+        <input class="input" id="wSteps" inputmode="numeric"/>
+      </div>
+
 <label class="input-label">Duration (min)</label>
       <input class="input" id="wDur" inputmode="numeric"/>
 
-<label class="input-label">Distance miles</label>
+      <label class="input-label">Distance km</label>
+      <input class="input" id="wKm" inputmode="decimal"/>
+
+      <label class="input-label">Distance miles</label>
       <input class="input" id="wMiles" inputmode="decimal"/>
 
       <label class="input-label">Floors climbed</label>
@@ -1522,7 +1345,16 @@ function renderWorkout(){
       <label class="input-label">KB Swings</label>
       <input class="input" id="wSwings" inputmode="numeric"/>
 
-<label class="input-label">Circuit exercises</label>
+      <label class="input-label">Plank sec</label>
+      <input class="input" id="wPlank" inputmode="numeric"/>
+
+      <label class="input-label">Push-ups</label>
+      <input class="input" id="wPushups" inputmode="numeric"/>
+
+      <label class="input-label">Total reps</label>
+      <input class="input" id="wReps" inputmode="numeric"/>
+
+      <label class="input-label">Circuit exercises</label>
       <input class="input" id="wCircuitEx" inputmode="numeric"/>
 
       <label class="input-label">Notes</label>
@@ -1539,16 +1371,21 @@ function renderWorkout(){
     <div class="card">
       <h2>Your Workouts</h2>
       ${
-        entries.length===0
-        ? '<div class="small">No workouts yet.</div>'
-        : entries.map(e=>`
+        recentEntries.length===0
+        ? '<div class="small">No workouts in the past 7 days.</div>'
+        : recentEntries.map(e=>`
           <div class="list-row">
             <div style="flex:1;">
               <div style="font-weight:600;">${e.date} • ${e.category||""} <span class="badge-num" style="margin-left:8px;">${minutesToPoints(Number(e.duration)||0)} pts</span></div>
               <div class="small">
-                ${e.duration?`⏱ ${e.duration} min `:""} ${e.miles?`🛣 ${e.miles} mi `:""}
+                ${e.duration?`⏱ ${e.duration} min `:""}
+                ${e.km?`📏 ${e.km} km `:""}
+                ${e.miles?`🛣 ${e.miles} mi `:""}
                 ${e.floors?`🧗 ${e.floors} floors `:""}
-                ${e.swings?`💪 ${e.swings} swings `:""}  ${e.circuitEx?`🧩 ${e.circuitEx} circuit ex `:""} ${calcStrengthDensity(e)?`⚡ ${calcStrengthDensity(e)} reps/min`:""}
+                ${e.swings?`💪 ${e.swings} swings `:""}
+                ${e.plank?`🧘 ${e.plank} sec plank `:""}
+                ${e.pushups?`🧱 ${e.pushups} push-ups `:""}
+                ${e.reps?`🔁 ${e.reps} reps `:""}${e.circuitEx?`🧩 ${e.circuitEx} circuit ex `:""} ${calcStrengthDensity(e)?`⚡ ${calcStrengthDensity(e)} reps/min`:""}
               </div>
               ${e.notes?`<div class="small">${e.notes}</div>`:""}
             </div>
@@ -1563,10 +1400,20 @@ function renderWorkout(){
   const catOtherWrap = wrap.querySelector("#wCatOtherWrap");
   if(catSel && catOtherWrap){
     catSel.onchange=()=>{
+      const stepsWrap = wrap.querySelector("#wStepsWrap");
+      const stepsInput = wrap.querySelector("#wSteps");
       if(catSel.value==="Other") catOtherWrap.classList.remove("hidden");
       else {
         catOtherWrap.classList.add("hidden");
         const other=wrap.querySelector("#wCatOther"); if(other) other.value="";
+      }
+      // show steps input only when "Steps" is selected
+      if(stepsWrap){
+        if(catSel.value==="Steps") stepsWrap.classList.remove("hidden");
+        else {
+          stepsWrap.classList.add("hidden");
+          if(stepsInput) stepsInput.value="";
+        }
       }
     };
     catSel.onchange();
@@ -1591,25 +1438,64 @@ function renderWorkout(){
       }
       localStorage.last_cat = val; return val;
     })(),
+      steps:(wrap.querySelector("#wSteps")?.value||"").trim(),
       duration:wrap.querySelector("#wDur").value.trim(),
-      km:"", // km field removed from UI; keep for backward compatibility
+      km:wrap.querySelector("#wKm").value.trim(),
       miles:wrap.querySelector("#wMiles").value.trim(),
       floors:wrap.querySelector("#wFloors").value.trim(),
       swings:wrap.querySelector("#wSwings").value.trim(),
+      plank:wrap.querySelector("#wPlank").value.trim(),
+      pushups:wrap.querySelector("#wPushups").value.trim(),
+      reps:wrap.querySelector("#wReps").value.trim(),
       circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
       notes:wrap.querySelector("#wNotes").value.trim()
     };
     entries=[rec,...entries];
+
+    const kmVal = (parseFloat(rec.km)||0) + (parseFloat(rec.miles)||0)*1.60934;
     const floorsVal = parseFloat(rec.floors)||0;
     const swingsVal = parseFloat(rec.swings)||0;
+    const repsVal = parseFloat(rec.reps)||0;
+    const plankVal = parseFloat(rec.plank)||0;
     const circuitExVal = parseFloat(rec.circuitEx)||0;
     const pushupsVal = parseFloat(rec.pushups)||0;
+    const stepsVal = parseFloat(rec.steps)||0;
     const cat = (rec.category||"").toLowerCase();
     const isYoga = cat.match(/yoga|stretch/);
     const isStrength = cat.match(/strength|kettlebell|kb|push/);
     const isCardio = cat.match(/cardio|row|cycle|running|bike|stair|stairs|climb/);
 
-    // Challenge progress is computed from your log at render-time (no manual counter increments here).
+    // long term
+    longTermProg.floors = (longTermProg.floors||0)+floorsVal;
+    // distance buckets
+    const isCycling = /cycle|bike|cycling/.test(cat);
+    const isRowing  = /row/.test(cat);
+    longTermProg.totalKm = (longTermProg.totalKm||0) + kmVal;
+    if(isCycling){ longTermProg.cyclingKm = (longTermProg.cyclingKm||0) + kmVal; }
+    if(isRowing){  longTermProg.rowingKm  = (longTermProg.rowingKm||0) + kmVal; }
+    longTermProg.circuitEx = (longTermProg.circuitEx||0)+circuitExVal;
+
+    // monthly
+    monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
+    monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
+    monthlyProg.walkKm = (monthlyProg.walkKm||0)+(/walk/.test(cat)?kmVal:0);
+    if(isYoga){ /* monthly yoga per-day counting */
+    monthlyProg.pushups=(monthlyProg.pushups||0)+pushupsVal; }
+
+    // weekly
+    if(isStrength){ /* per-day counting */ }
+    if(isCardio){ /* per-day counting */ }
+    weeklyProg.floors = (weeklyProg.floors||0)+floorsVal;
+    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/running|row|cycle|bike|cycling/.test(cat)?kmVal:0);
+    weeklyProg.steps = (weeklyProg.steps||0)+stepsVal;
+
+    // weekend
+    weekendProg.swings=(weekendProg.swings||0)+swingsVal;
+    weekendProg.distanceKm=(weekendProg.distanceKm||0)+kmVal;
+    weekendProg.circuitEx=(weekendProg.circuitEx||0)+circuitExVal;
+    if(isYoga){ /* weekend yoga per-day counting */ }
+
+
     recomputeSessionCounters();
     persist();
     showToast(compliment());
@@ -1654,6 +1540,8 @@ function renderMotivation(){
       <input class="input" id="mantraInput" value="${escapeAttr(weeklyMantra||"")}" placeholder="Set your mantra for this week"/>
       <button class="btn primary" id="saveMantraBtn">Save Mantra</button>
     </div>
+
+  
 
     <div class="card">
       <h2>🙏 Gratitude</h2>
@@ -1768,7 +1656,7 @@ function showScreen(name){
 
   if(name==="overview") renderOverview();
   if(name==="health") renderHealth();
-  if(name==="lifestyle") renderLifestyle();
+  if(name==="lifestyle"){ renderLifestyle(); }
   if(name==="workout") renderWorkout();
   if(name==="motivation") renderMotivation();
 }
@@ -1779,6 +1667,9 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 showScreen("overview");
 
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./service-worker.js');
+}
 </script>
 </body>
 </html>
