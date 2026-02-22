@@ -608,6 +608,54 @@ function persist(){
 
 }
 
+// Backup / Restore helpers (useful when the app is opened from a different file name/path)
+const MOMENTUM_DATA_KEYS = [
+  "workout_entries","bp_log","h_log","weight_start","weight_goal",
+  "lw_days","lw_epoch","focus_week","reflections","mot_log",
+  "gratitude_log","journal_log","weekly_mantra","daily_checkins","achievements",
+  "week_epoch_snapshot","last_week_snapshot","weekly_goal","adaptive_goals",
+  "fired_flags","todays_wins","mood_log","month_theme","why_doing_this","low_energy","unlocked",
+  "longTermProg","monthlyProg","weeklyProg","weekendProg",
+  "last_cat"
+];
+
+function exportMomentumData(){
+  const data = {};
+  MOMENTUM_DATA_KEYS.forEach(k=>{
+    const v = localStorage.getItem(k);
+    if(v !== null) data[k] = v; // store raw strings so import is lossless
+  });
+  return JSON.stringify({version:1, exported_at: new Date().toISOString(), data}, null, 2);
+}
+
+function importMomentumDataFromText(txt){
+  try{
+    const obj = JSON.parse(txt);
+    const payload = obj && obj.data ? obj.data : obj;
+    if(!payload || typeof payload !== "object") return false;
+    Object.keys(payload).forEach(k=>{
+      if(payload[k] === null || payload[k] === undefined) return;
+      localStorage.setItem(k, String(payload[k]));
+    });
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function downloadTextFile(filename, content, mime){
+  const blob = new Blob([content], {type: (mime||"text/plain;charset=utf-8;")});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 500);
+}
+
+
 // reset helpers
 function hardResetWeeklyScore(){
   const wk = weekEpoch;
@@ -685,6 +733,15 @@ function renderOverview(){
     <div class="card">
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
+      <div class="small">
+        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
+        ${
+          diff>0?` • ▲ +${diff}`:
+          diff<0?` • ▼ ${diff}`:
+          ` • same`
+        }
+      </div>
+      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
@@ -1327,7 +1384,7 @@ function renderWorkout(){
 
       <div id="wStepsWrap" class="hidden">
         <label class="input-label">Steps</label>
-        <input class="input" id="wSteps" inputmode="numeric"/>
+        <input class="input" id="wSteps" inputmode="numeric" placeholder="e.g., 15000"/>
       </div>
 
 <label class="input-label">Duration (min)</label>
@@ -1369,7 +1426,7 @@ function renderWorkout(){
     ${sectionChallenges("⚡ Weekend Warrior", weekendList,"resetWeekendBtn")}
 
     <div class="card">
-      <h2>Your Workouts</h2>
+      <h2>Your Workouts <span class="small">(last 7 days)</span></h2>
       ${
         recentEntries.length===0
         ? '<div class="small">No workouts in the past 7 days.</div>'
@@ -1394,6 +1451,23 @@ function renderWorkout(){
         `).join("")
       }
     </div>
+
+<div class="card">
+  <h2>🧾 Backup / Restore</h2>
+  <div class="small">If you open Momentum from a different file name/path, your browser may treat it as a new app and your saved data won’t show. Export from the old file, then import here.</div>
+
+  <div class="btn-row">
+    <button class="btn" id="exportDataBtn">Export data</button>
+    <button class="btn" id="downloadDataBtn">Download JSON</button>
+    <button class="btn" id="copyDataBtn">Copy</button>
+  </div>
+
+  <textarea class="input" id="backupText" placeholder="Export will appear here… or paste backup JSON to import"></textarea>
+
+  <div class="btn-row">
+    <button class="btn" id="importDataBtn">Import (paste JSON above)</button>
+  </div>
+</div>
   `;
 
   const catSel = wrap.querySelector("#wCatSelect");
@@ -1517,6 +1591,53 @@ function renderWorkout(){
   wrap.querySelector("#resetMonthlyBtn").onclick=()=>{ resetMonthly(); };
   wrap.querySelector("#resetWeeklyChalBtn").onclick=()=>{ resetWeeklyChal(); };
   wrap.querySelector("#resetWeekendBtn").onclick=()=>{ resetWeekend(); };
+
+// Backup / Restore handlers
+const backupText = wrap.querySelector("#backupText");
+const exportBtn = wrap.querySelector("#exportDataBtn");
+const downloadBtn = wrap.querySelector("#downloadDataBtn");
+const copyBtn = wrap.querySelector("#copyDataBtn");
+const importBtn = wrap.querySelector("#importDataBtn");
+
+if(exportBtn && backupText){
+  exportBtn.onclick=()=>{
+    backupText.value = exportMomentumData();
+    showToast("Backup generated");
+  };
+}
+if(downloadBtn && backupText){
+  downloadBtn.onclick=()=>{
+    const txt = backupText.value && backupText.value.trim() ? backupText.value : exportMomentumData();
+    if(backupText) backupText.value = txt;
+    downloadTextFile(`momentum_backup_${todayISO()}.json`, txt, "application/json;charset=utf-8;");
+    showToast("Downloaded");
+  };
+}
+if(copyBtn && backupText){
+  copyBtn.onclick=async ()=>{
+    const txt = backupText.value || "";
+    if(!txt.trim()){ showToast("Nothing to copy"); return; }
+    try{
+      await navigator.clipboard.writeText(txt);
+      showToast("Copied");
+    }catch(e){
+      // fallback
+      backupText.focus(); backupText.select();
+      document.execCommand("copy");
+      showToast("Copied");
+    }
+  };
+}
+if(importBtn && backupText){
+  importBtn.onclick=()=>{
+    const txt = (backupText.value||"").trim();
+    if(!txt){ showToast("Paste backup JSON first"); return; }
+    const ok = importMomentumDataFromText(txt);
+    if(!ok){ showToast("Invalid JSON"); return; }
+    showToast("Imported — reloading…");
+    setTimeout(()=>location.reload(), 300);
+  };
+}
 }
 
 // MOTIVATION (segmented + less scroll)
@@ -1541,7 +1662,32 @@ function renderMotivation(){
       <button class="btn primary" id="saveMantraBtn">Save Mantra</button>
     </div>
 
-  
+    
+
+    <div class="card">
+      <h2>✅ Daily Check-In</h2>
+      
+      <div class="small" style="margin-bottom:6px;">Energy</div>
+      <div class="btn-row" id="energyBtns" style="gap:6px;">
+        ${["😴","😐","🙂","😄","⚡"].map(e=>`<button class="btn" data-energy="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
+      </div>
+
+      <div class="small" style="margin:10px 0 6px;">Mood</div>
+      <div class="btn-row" id="moodBtns" style="gap:6px;">
+        ${["😞","😐","🙂","😄","🔥"].map(e=>`<button class="btn" data-mood="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
+      </div>
+
+      <input class="input" id="checkWin" placeholder="One-line win"/>
+      <button class="btn primary" id="saveCheckinBtn">Save</button>
+      ${recentCheckins.map(c=>`
+        <div class="list-row">
+          <div style="flex:1">
+            <div class="small">${escapeHtml(c.date)}</div>
+            <div>${escapeHtml(c.win)}</div>
+          </div>
+          <button class="btn danger" data-del-check="${c.id}">🗑️</button>
+        </div>`).join("")}
+    </div>
 
     <div class="card">
       <h2>🙏 Gratitude</h2>
