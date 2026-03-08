@@ -728,15 +728,6 @@ function renderOverview(){
     <div class="card">
       <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
-      <div class="small">
-        Last week: ${lastWeekTotal} pts ${lastWeek ? ` • 🏋️ workouts ${lastWeek.workoutPts} pts` : ""}
-        ${
-          diff>0?` • ▲ +${diff}`:
-          diff<0?` • ▼ ${diff}`:
-          ` • same`
-        }
-      </div>
-      ${lastWeek ? `<div class="small" style="margin-top:6px;opacity:.85;">Last week breakdown: 🏋️ ${lastWeek.workoutPts} • 🌿 ${lastWeek.lifestylePts} • ❤️ ${lastWeek.healthPts} • 💫 ${lastWeek.motivationPts} • ✨ ${lastWeek.bonusPts} (bonus)</div>` : ""}
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
       <div class="btn-row" style="margin-top:12px;">
@@ -1636,22 +1627,6 @@ function renderMotivation(){
       <input class="input" id="mantraInput" value="${escapeAttr(weeklyMantra||"")}" placeholder="Set your mantra for this week"/>
       <button class="btn primary" id="saveMantraBtn">Save Mantra</button>
     </div>
-
-    
-
-    <div class="card">
-      <h2>✅ Daily Check-In</h2>
-      
-      <div class="small" style="margin-bottom:6px;">Energy</div>
-      <div class="btn-row" id="energyBtns" style="gap:6px;">
-        ${["😴","😐","🙂","😄","⚡"].map(e=>`<button class="btn" data-energy="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
-      </div>
-
-      <div class="small" style="margin:10px 0 6px;">Mood</div>
-      <div class="btn-row" id="moodBtns" style="gap:6px;">
-        ${["😞","😐","🙂","😄","🔥"].map(e=>`<button class="btn" data-mood="${e}" style="padding:8px 10px;min-width:44px;">${e}</button>`).join("")}
-      </div>
-
       <input class="input" id="checkWin" placeholder="One-line win"/>
       <button class="btn primary" id="saveCheckinBtn">Save</button>
       ${recentCheckins.map(c=>`
