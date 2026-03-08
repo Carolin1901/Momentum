@@ -589,7 +589,6 @@ function persist(){
   lsSet("last_week_snapshot",lastWeekSnapshot);
   lsSet("weekly_goal",goal);
   lsSet("fired_flags",firedFlags);
-  lsSet("longTermProg",longTermProg);
   lsSet("monthlyProg",monthlyProg);
   lsSet("weeklyProg",weeklyProg);
   lsSet("weekendProg",weekendProg);
@@ -668,10 +667,6 @@ function hardResetWeeklyScore(){
   persist();
   showToast("Weekly score and lifestyle reset");
   renderOverview();
-}
-function resetLongTerm(){
-  longTermProg={floors:0,distanceKm:0};
-  persist(); showToast("Challenges reset"); renderWorkout();
 }
 function resetMonthly(){
   monthlyProg={swings:0,cyclingKm:0,yogaSessions:0};
@@ -1211,13 +1206,6 @@ function renderLifestyle(){
 function renderWorkout(){
   const wrap=document.getElementById("screen-workout");
 
-  const longTermList=[
-    {label:"🏔 Everest Base Camp (8,000 floors)", goal:8000, value:Math.min(8000, longTermProg.floors||0)},
-    {label:"🚴 Emerald Rider (750 miles cycling)", goal:1207.0050, value:Math.min(1207.0050, longTermProg.cyclingKm||0), unit:"km"},
-    {label:"🚶 Year of Movement (1,500 miles total)", goal:2414.0100, value:Math.min(2414.0100, longTermProg.totalKm||0), unit:"km"},
-    {label:"🚣 Steady Oars (500 miles rowing)", goal:804.6700, value:Math.min(804.6700, longTermProg.rowingKm||0), unit:"km"},
-    {label:"🧩 Circuit Foundation (10,000 circuit exercises)", goal:10000, value:Math.min(10000, longTermProg.circuitEx||0)}
-  ];
   const monthList=[
     {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
     {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
@@ -1268,7 +1256,7 @@ function renderWorkout(){
   const pctWeek = Math.min(100,Math.round((nowWeek.total/(goal||1))*100));
 
   // show only the most recent 7 days in the workout list
-  const cutoffISO = addDaysISO(todayISO(), -6);
+  const cutoffISO = addDaysISO(todayISO(), -30);
   const recentEntries = entries
     .filter(e => (e.date||"") >= cutoffISO)
     .slice()
@@ -1419,17 +1407,16 @@ function renderWorkout(){
 
       <button class="btn" id="addWorkoutBtn">Add Workout</button>
     </div>
-
-    ${sectionChallenges("🏔 Long-Term Adventure Challenges", longTermList,"resetLongTermBtn")}
+    
     ${sectionChallenges("🗓 Monthly Challenges", monthList,"resetMonthlyBtn")}
     ${sectionChallenges("📅 Weekly Challenges", weekList,"resetWeeklyChalBtn")}
     ${sectionChallenges("⚡ Weekend Warrior", weekendList,"resetWeekendBtn")}
 
     <div class="card">
-      <h2>Your Workouts <span class="small">(last 7 days)</span></h2>
+      <h2>Your Workouts <span class="small">(last 30 days)</span></h2>
       ${
         recentEntries.length===0
-        ? '<div class="small">No workouts in the past 7 days.</div>'
+        ? '<div class="small">No workouts in the past 30 days.</div>'
         : recentEntries.map(e=>`
           <div class="list-row">
             <div style="flex:1;">
@@ -1539,16 +1526,6 @@ function renderWorkout(){
     const isStrength = cat.match(/strength|kettlebell|kb|push/);
     const isCardio = cat.match(/cardio|row|cycle|running|bike|stair|stairs|climb/);
 
-    // long term
-    longTermProg.floors = (longTermProg.floors||0)+floorsVal;
-    // distance buckets
-    const isCycling = /cycle|bike|cycling/.test(cat);
-    const isRowing  = /row/.test(cat);
-    longTermProg.totalKm = (longTermProg.totalKm||0) + kmVal;
-    if(isCycling){ longTermProg.cyclingKm = (longTermProg.cyclingKm||0) + kmVal; }
-    if(isRowing){  longTermProg.rowingKm  = (longTermProg.rowingKm||0) + kmVal; }
-    longTermProg.circuitEx = (longTermProg.circuitEx||0)+circuitExVal;
-
     // monthly
     monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
     monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
@@ -1573,7 +1550,6 @@ function renderWorkout(){
     recomputeSessionCounters();
     persist();
     showToast(compliment());
-    if((longTermProg.floors||0)>=1000) maybeUnlock("everest_1k_floors","1,000 floors climbed");
     if((monthlyProg.swings||0)>=1000) maybeUnlock("kb_1k_swings_month","1,000 KB swings (month)");
     renderWorkout();
   };
@@ -1587,7 +1563,6 @@ function renderWorkout(){
     };
   });
 
-  wrap.querySelector("#resetLongTermBtn").onclick=()=>{ resetLongTerm(); };
   wrap.querySelector("#resetMonthlyBtn").onclick=()=>{ resetMonthly(); };
   wrap.querySelector("#resetWeeklyChalBtn").onclick=()=>{ resetWeeklyChal(); };
   wrap.querySelector("#resetWeekendBtn").onclick=()=>{ resetWeekend(); };
