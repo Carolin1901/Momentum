@@ -9,36 +9,49 @@
 <title>Momentum</title>
 <style>
 :root {
-  --bg:#0f172a;
-  --card:#1e293b;
-  --border:#334155;
+  --bg:#07111f;
+  --bg-top:#10233f;
+  --card:#102033;
+  --card-strong:#152942;
+  --border:#27415f;
   --text:#f8fafc;
-  --dim:#94a3b8;
-  --accent:#10b981;
+  --dim:#9ab0c8;
+  --accent:#22c55e;
+  --accent-2:#f59e0b;
+  --accent-cool:#38bdf8;
+  --danger:#f87171;
   --radius-lg:16px;
   --radius-md:12px;
+  --radius-xl:24px;
   --pad-card:16px;
   --pad-screen:16px;
   --nav-h:70px;
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", Roboto, "Segoe UI", sans-serif;
+  --font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
 }
 *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
 body{
   margin:0;
-  background:var(--bg);
+  background:
+    radial-gradient(circle at top, rgba(56,189,248,.18), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(34,197,94,.14), transparent 24%),
+    linear-gradient(180deg,var(--bg-top),var(--bg));
   color:var(--text);
   font-family:var(--font-family);
+  min-height:100vh;
 }
 .screen{
   padding:var(--pad-screen);
   padding-bottom:calc(var(--nav-h) + 40px);
   max-width:600px;
   margin:0 auto;
+  animation:screenIn .28s ease;
 }
 .card{
-  background:var(--card);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01)), var(--card);
   border:1px solid var(--border);
-  border-radius:var(--radius-lg);
+  border-radius:var(--radius-xl);
+  box-shadow:0 20px 40px rgba(0,0,0,.18);
+  backdrop-filter:blur(10px);
   padding:var(--pad-card);
   margin-bottom:16px;
 }
@@ -124,17 +137,30 @@ textarea.input{
   margin-top:8px;
 }
 .btn{
-  background:var(--card);
+  background:rgba(255,255,255,.04);
   border:1px solid var(--border);
   border-radius:var(--radius-md);
   padding:10px 16px;
   font-size:14px;
   color:var(--text);
   font-weight:500;
+  min-height:44px;
+  touch-action:manipulation;
+  transition:transform .16s ease, border-color .16s ease, background .16s ease;
 }
+.btn:active{transform:scale(.98);}
 .btn.danger{
-  color:#f87171;
-  border-color:#f87171;
+  color:var(--danger);
+  border-color:rgba(248,113,113,.6);
+}
+.btn.primary{
+  background:linear-gradient(135deg,var(--accent),#059669);
+  border-color:var(--accent);
+  color:#ecfeff;
+}
+.btn.soft{
+  background:rgba(56,189,248,.1);
+  border-color:rgba(56,189,248,.3);
 }
 .list-row{
   display:flex;
@@ -178,13 +204,14 @@ textarea.input{
   right:0;
   bottom:0;
   height:var(--nav-h);
-  background:var(--card);
+  background:rgba(7,17,31,.88);
   border-top:1px solid var(--border);
   display:flex;
   justify-content:space-around;
   align-items:center;
   z-index:999;
   font-size:12px;
+  backdrop-filter:blur(18px);
 }
 .nav-btn{
   display:flex;
@@ -207,6 +234,186 @@ textarea.input{
   margin-bottom:4px;
 }
 .hidden{display:none;}
+.quick-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.mini-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.stat-chip{
+  border:1px solid var(--border);
+  background:rgba(255,255,255,.04);
+  border-radius:14px;
+  padding:12px;
+}
+.stat-chip .small{
+  margin-top:4px;
+}
+.calendar-strip{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:6px;
+  margin-top:10px;
+}
+.calendar-day{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:10px 6px;
+  text-align:center;
+  background:rgba(255,255,255,.03);
+}
+.calendar-day.active{
+  border-color:rgba(16,185,129,.7);
+  background:rgba(16,185,129,.12);
+}
+.calendar-day.good{
+  background:rgba(16,185,129,.12);
+}
+.calendar-day.empty{
+  opacity:.65;
+}
+.sticky-actions{
+  position:sticky;
+  bottom:calc(var(--nav-h) + 12px);
+  z-index:10;
+}
+.hero-card{
+  background:
+    radial-gradient(circle at top right, rgba(34,197,94,.28), transparent 35%),
+    linear-gradient(135deg, rgba(21,41,66,.95), rgba(9,19,33,.96));
+}
+.hero-head{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+}
+.hero-title{
+  margin:0;
+  font-size:30px;
+  line-height:1;
+  letter-spacing:.02em;
+}
+.hero-kicker{
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  font-size:11px;
+  color:#c9f7dd;
+  margin-bottom:8px;
+}
+.hero-sub{
+  max-width:32ch;
+  margin-top:8px;
+}
+.score-pill{
+  min-width:96px;
+  border-radius:18px;
+  padding:12px 14px;
+  background:rgba(7,17,31,.44);
+  border:1px solid rgba(255,255,255,.08);
+  text-align:right;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.4fr 1fr;
+  gap:12px;
+  margin-top:16px;
+}
+.hero-panel{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+  background:rgba(7,17,31,.28);
+}
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.05);
+  font-size:12px;
+  color:var(--text);
+}
+.tone-ready{color:#bbf7d0;border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12);}
+.tone-steady{color:#fde68a;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.12);}
+.tone-recovery{color:#bae6fd;border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);}
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+.week-plan{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+.day-pill{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:10px 8px;
+  background:rgba(255,255,255,.03);
+  text-align:center;
+}
+.day-pill.active{
+  border-color:rgba(34,197,94,.55);
+  background:rgba(34,197,94,.12);
+}
+.day-pill .small{display:block;margin-top:4px;}
+.segmented{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.record-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.record-card{
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:12px;
+  background:rgba(255,255,255,.04);
+}
+.record-value{
+  font-size:22px;
+  font-weight:700;
+  color:var(--accent);
+  margin-top:8px;
+}
+.list-row.soft{
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.05);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+}
+.fab-row{
+  position:sticky;
+  bottom:calc(var(--nav-h) + 12px);
+  display:flex;
+  gap:10px;
+  z-index:11;
+  margin-top:14px;
+}
+.fab-row .btn{
+  flex:1;
+  min-height:50px;
+}
 #toast {
   position:fixed;
   left:50%;
@@ -223,24 +430,56 @@ textarea.input{
   z-index:1000;
 }
 #toast.show{opacity:1;}
+@keyframes screenIn{
+  from{opacity:.55;transform:translateY(6px);}
+  to{opacity:1;transform:none;}
+}
+@media (max-width: 480px){
+  .quick-grid,
+  .mini-grid,
+  .hero-grid,
+  .record-grid,
+  .segmented{
+    grid-template-columns:1fr;
+  }
+  .week-plan{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .screen{
+    padding:14px;
+    padding-bottom:calc(var(--nav-h) + 56px);
+  }
+  .hero-head{
+    flex-direction:column;
+  }
+  .score-pill{
+    width:100%;
+    text-align:left;
+  }
+}
 </style>
 </head>
 <body>
 
 <div id="toast">Saved</div>
 
-<div id="screen-overview" class="screen"></div>
+<div id="screen-overview" class="screen">
+  <div class="card">
+    <h2>Momentum</h2>
+    <div class="small">Loading your dashboard...</div>
+  </div>
+</div>
 <div id="screen-health" class="screen hidden"></div>
 <div id="screen-lifestyle" class="screen hidden"></div>
 <div id="screen-workout" class="screen hidden"></div>
-<div id="screen-motivation" class="screen hidden"></div>
+<div id="screen-history" class="screen hidden"></div>
 
 <nav class="nav">
-  <button class="nav-btn active" data-target="overview"><div class="nav-emoji">🏁</div>Overview</button>
-  <button class="nav-btn" data-target="health"><div class="nav-emoji">❤️</div>Health</button>
-  <button class="nav-btn" data-target="lifestyle"><div class="nav-emoji">🌿</div>Lifestyle</button>
-  <button class="nav-btn" data-target="workout"><div class="nav-emoji">🏋️</div>Workout</button>
-  <button class="nav-btn" data-target="motivation"><div class="nav-emoji">💫</div>Motivation</button>
+  <button class="nav-btn active" data-target="overview"><div class="nav-emoji">T</div>Today</button>
+  <button class="nav-btn" data-target="health"><div class="nav-emoji">H</div>Health</button>
+  <button class="nav-btn" data-target="lifestyle"><div class="nav-emoji">L</div>Lifestyle</button>
+  <button class="nav-btn" data-target="workout"><div class="nav-emoji">W</div>Workout</button>
+  <button class="nav-btn" data-target="history"><div class="nav-emoji">R</div>History</button>
 </nav>
 
 <script>
@@ -332,7 +571,7 @@ function maybeUnlock(key,label){
   unlocked[key]=true;
   recomputeSessionCounters();
     persist();
-  showToast("🏅 Unlocked: "+label);
+  showToast("Unlocked: "+label);
 }
 
 
@@ -359,6 +598,353 @@ function downloadCSV(filename, rows){
   setTimeout(()=>URL.revokeObjectURL(url), 500);
 }
 
+function defaultHabitDefs(){
+  return [
+    {key:"sleep7", label:"Sleep >=7h", icon:"Sleep"},
+    {key:"steps", label:"Steps >= 15,000", icon:"Steps"},
+    {key:"outside", label:"Outside time >= 30 min", icon:"Outside"},
+    {key:"no_sugar", label:"No added sugar", icon:"Nutrition"},
+    {key:"reading", label:"Reading", icon:"Mind"},
+    {key:"mindbody", label:"Meditation or Stretch/Yoga", icon:"Recovery"},
+    {key:"declutter30", label:"Declutter/Clean 30 min", icon:"Reset"}
+  ];
+}
+
+function normalizeHabitDefs(list){
+  const base = Array.isArray(list) && list.length ? list : defaultHabitDefs();
+  return base.map((h, idx)=>({
+    key: String(h.key || ("habit_" + idx)).replace(/[^a-z0-9_]+/gi,"_").toLowerCase(),
+    label: String(h.label || ("Habit " + (idx + 1))).trim(),
+    icon: String(h.icon || "Habit").trim()
+  })).filter(h=>h.label);
+}
+
+function defaultReminderSettings(){
+  return {enabled:false, time:"19:00", permission:"default", lastNotified:"", fallbackShown:""};
+}
+
+function defaultWorkoutTemplates(){
+  return [];
+}
+
+function defaultCustomChallenges(){
+  return [];
+}
+
+function defaultWeeklyPlan(){
+  return {
+    Mon:"Strength",
+    Tue:"Cardio",
+    Wed:"Recovery",
+    Thu:"Strength",
+    Fri:"Cardio",
+    Sat:"Long Session",
+    Sun:"Reset"
+  };
+}
+
+function dayKeyFromISO(dateISO){
+  const names=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  return names[new Date((dateISO||todayISO())+"T00:00:00").getDay()];
+}
+
+function weeklyPlanLabel(dateISO){
+  return weeklyPlan[dayKeyFromISO(dateISO)] || "Open";
+}
+
+function planTone(label){
+  if(/strength|push|hard|long/i.test(label||"")) return "tone-ready";
+  if(/cardio|steady|open/i.test(label||"")) return "tone-steady";
+  return "tone-recovery";
+}
+
+function getLaggingHabit(){
+  const today = todayISO();
+  let best = null;
+  habitDefs.forEach(h=>{
+    let lastDone = "";
+    for(let i=0;i<45;i++){
+      const day = addDaysISO(today, -i);
+      if(lwDays?.[day]?.[h.key]){
+        lastDone = day;
+        break;
+      }
+    }
+    const gap = lastDone ? Math.max(0, Math.round((new Date(today+"T00:00:00") - new Date(lastDone+"T00:00:00")) / 86400000)) : 99;
+    if(!best || gap > best.gap) best = {key:h.key, label:h.label, gap, lastDone};
+  });
+  return best;
+}
+
+function computeRecords(){
+  const longestWorkout = entries.reduce((best,e)=>{
+    const dur = Number(e.duration)||0;
+    if(dur > best.value) return {value:dur, label:(e.category||"Workout"), date:e.date||""};
+    return best;
+  }, {value:0,label:"",date:""});
+  const mostSteps = entries.reduce((best,e)=>{
+    const steps = Number(e.steps)||0;
+    if(steps > best.value) return {value:steps, label:(e.category||"Steps"), date:e.date||""};
+    return best;
+  }, {value:0,label:"",date:""});
+  const byWeek = {};
+  const byMonth = {};
+  entries.forEach(e=>{
+    const day = (e.date||"").slice(0,10);
+    if(!day) return;
+    const points = minutesToPoints(Number(e.duration)||0);
+    const wk = weekStartISO(day);
+    const mk = day.slice(0,7);
+    byWeek[wk] = (byWeek[wk]||0) + points;
+    byMonth[mk] = (byMonth[mk]||0) + points;
+  });
+  let bestWeek = {value:0,label:""};
+  Object.entries(byWeek).forEach(([label, value])=>{ if(value > bestWeek.value) bestWeek = {value, label}; });
+  let bestMonth = {value:0,label:""};
+  Object.entries(byMonth).forEach(([label, value])=>{ if(value > bestMonth.value) bestMonth = {value, label}; });
+  return {longestWorkout, mostSteps, bestWeek, bestMonth};
+}
+
+const CHALLENGE_METRICS = {
+  workout_points_week: {
+    label:"Workout points this week",
+    getValue: ()=>entries.filter(e=>(e.date||"") >= weekEpoch && (e.date||"") < addDaysISO(weekEpoch, 7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0)
+  },
+  strength_sessions_week: {
+    label:"Strength sessions this week",
+    getValue: ()=>weeklyProg.strengthSessions || 0
+  },
+  cardio_sessions_week: {
+    label:"Cardio sessions this week",
+    getValue: ()=>weeklyProg.cardioSessions || 0
+  },
+  steps_week: {
+    label:"Steps this week",
+    getValue: ()=>weeklyProg.steps || 0
+  },
+  mobility_sessions_week: {
+    label:"Mobility sessions this week",
+    getValue: ()=>weeklyProg.mobilitySessions || 0
+  },
+  active_days_7: {
+    label:"Active days in last 7",
+    getValue: ()=>{
+      let total = 0;
+      for(let i=0;i<7;i++){
+        const day = addDaysISO(todayISO(), -i);
+        const hasWorkout = entries.some(e=>(e.date||"").slice(0,10)===day);
+        const hasHabit = habitDefs.some(h=>!!lwDays?.[day]?.[h.key]);
+        if(hasWorkout || hasHabit) total += 1;
+      }
+      return total;
+    }
+  }
+};
+
+function getChallengeProgress(challenge){
+  if(!challenge) return {value:0,target:0,pct:0,label:""};
+  const metric = CHALLENGE_METRICS[challenge.metric];
+  if(!metric) return {value:0,target:Number(challenge.target)||0,pct:0,label:""};
+  const value = Number(metric.getValue() || 0);
+  const target = Number(challenge.target) || 0;
+  const pct = Math.min(100, Math.round((value / (target || 1)) * 100));
+  return {value, target, pct, label:metric.label};
+}
+
+function getBadgeTier(metric, challengeName){
+  const prior = achievements.filter(a=>
+    a.type === "challenge_badge" &&
+    a.metric === metric &&
+    String(a.name || "").toLowerCase() === String(challengeName || "").toLowerCase()
+  ).length;
+  const nth = prior + 1;
+  if(nth >= 5) return {tier:"Gold", nth};
+  if(nth >= 3) return {tier:"Silver", nth};
+  return {tier:"Bronze", nth};
+}
+
+function maybeCompleteCustomChallenge(){
+  if(!activeChallengeId) return false;
+  const idx = customChallenges.findIndex(c=>c.id===activeChallengeId);
+  if(idx < 0) return false;
+  const challenge = customChallenges[idx];
+  if(challenge.completedAt) return false;
+  const progress = getChallengeProgress(challenge);
+  if(progress.value < progress.target || !progress.target) return false;
+
+  const completedAt = new Date().toISOString();
+  const badgeTier = getBadgeTier(challenge.metric, challenge.name);
+  const rewardName = `${badgeTier.tier} ${challenge.name} badge`;
+  customChallenges[idx] = Object.assign({}, challenge, {completedAt, rewardName, badgeTier:badgeTier.tier, completionCount:badgeTier.nth});
+  achievements = [{
+    id:uid(),
+    type:"challenge_badge",
+    name:challenge.name,
+    rewardName,
+    badgeTier:badgeTier.tier,
+    completionCount:badgeTier.nth,
+    completedAt,
+    metric:challenge.metric,
+    target:challenge.target
+  }, ...achievements].slice(0, 50);
+  maybeUnlock(`challenge_${challenge.id}`, rewardName);
+  persist();
+  showToast(`Challenge complete: ${challenge.name}`);
+  return true;
+}
+
+function todayActivityCount(){
+  const t = todayISO();
+  const habitCount = Object.values(lwDays?.[t] || {}).filter(Boolean).length;
+  const workoutCount = entries.filter(e=>(e.date||"").slice(0,10)===t).length;
+  const checkinCount = checkins.filter(e=>(e.date||"").slice(0,10)===t).length;
+  const healthCount = bpLog.filter(e=>(e.date||"").slice(0,10)===t).length + hLog.filter(e=>(e.date||"").slice(0,10)===t).length;
+  return habitCount + workoutCount + checkinCount + healthCount;
+}
+
+function getTodayReadiness(){
+  return readinessLog[todayISO()] || {energy:3,soreness:3,sleep:"",note:""};
+}
+
+function readinessScoreFor(day){
+  const row = readinessLog?.[day];
+  if(!row) return null;
+  const energy = Number(row.energy)||0;
+  const soreness = Number(row.soreness)||0;
+  const sleep = Number(row.sleep)||0;
+  if(!energy && !soreness && !sleep) return null;
+  const score = Math.round(((energy*20) + ((6-Math.min(5,Math.max(1,soreness||3)))*15) + Math.min(10, sleep)*4));
+  return Math.max(0, Math.min(100, score));
+}
+
+function buildTodayPlan(){
+  const score = readinessScoreFor(todayISO());
+  const habitGap = Math.max(0, habitDefs.length - habitDefs.reduce((s,h)=>s+(lwDays?.[todayISO()]?.[h.key]?1:0),0));
+  if(score == null){
+    return {
+      label:"Set your recovery first",
+      tone:"soft",
+      text:"Log energy, soreness, and sleep to get a tailored plan.",
+      actions:["Save recovery","Do 1 easy habit"]
+    };
+  }
+  if(score >= 78){
+    return {
+      label:"Push day",
+      tone:"primary",
+      text:"You look ready for a stronger session. Go for strength, intervals, or a longer cardio block.",
+      actions:["Lift 45 min","Try a challenge set"]
+    };
+  }
+  if(score >= 58){
+    return {
+      label:"Steady day",
+      tone:"soft",
+      text:`Aim for consistency: one workout plus ${habitGap > 0 ? Math.min(2, habitGap) : 1} habit checks.`,
+      actions:["Walk or ride","Check off habits"]
+    };
+  }
+  return {
+    label:"Recovery day",
+    tone:"soft",
+    text:"Keep the streak alive with mobility, walking, hydration, and sleep.",
+    actions:["Yoga 20","Take an easy walk"]
+  };
+}
+
+async function maybeSendReminder(){
+  if(!reminderSettings.enabled) return;
+  const now = new Date();
+  const today = todayISO();
+  const time = String(reminderSettings.time || "19:00");
+  const parts = time.split(":");
+  const hours = Number(parts[0] || 0);
+  const minutes = Number(parts[1] || 0);
+  const due = new Date();
+  due.setHours(hours, minutes, 0, 0);
+  if(now < due) return;
+  if(todayActivityCount() > 0) return;
+  if(reminderSettings.lastNotified === today || reminderSettings.fallbackShown === today) return;
+
+  if("Notification" in window && Notification.permission === "granted"){
+    try{
+      const reg = await navigator.serviceWorker.getRegistration();
+      if(reg){
+        await reg.showNotification("Momentum check-in", {
+          body:"Log one habit or one workout today to keep your streak moving.",
+          icon:"./icons/icon-192.png",
+          badge:"./icons/icon-192.png",
+          tag:"momentum-daily-reminder"
+        });
+        reminderSettings.lastNotified = today;
+        reminderSettings.permission = Notification.permission;
+        persist();
+        return;
+      }
+    }catch(e){}
+  }
+
+  reminderSettings.fallbackShown = today;
+  persist();
+  showToast("Reminder: log one habit or one workout today");
+}
+
+const STORAGE_GETTERS = {
+  workout_entries: ()=>entries,
+  bp_log: ()=>bpLog,
+  h_log: ()=>hLog,
+  weight_start: ()=>weightStart,
+  weight_goal: ()=>weightGoal,
+  lw_days: ()=>lwDays,
+  lw_epoch: ()=>lwEpoch,
+  focus_week: ()=>focusWeek,
+  reflections: ()=>reflections,
+  mot_log: ()=>motLog,
+  gratitude_log: ()=>gratitudeLog,
+  journal_log: ()=>journalLog,
+  weekly_mantra: ()=>weeklyMantra,
+  daily_checkins: ()=>checkins,
+  achievements: ()=>achievements,
+  habit_defs: ()=>habitDefs,
+  readiness_log: ()=>readinessLog,
+  workout_templates: ()=>workoutTemplates,
+  custom_challenges: ()=>customChallenges,
+  active_challenge_id: ()=>activeChallengeId,
+  weekly_plan: ()=>weeklyPlan,
+  reminder_settings: ()=>reminderSettings,
+  last_backup_export: ()=>lastBackupExport,
+  week_epoch_snapshot: ()=>weekEpoch,
+  last_week_snapshot: ()=>lastWeekSnapshot,
+  weekly_goal: ()=>goal,
+  adaptive_goals: ()=>adaptiveGoals,
+  fired_flags: ()=>firedFlags,
+  todays_wins: ()=>todaysWins,
+  month_theme: ()=>monthTheme,
+  low_energy: ()=>lowEnergy,
+  unlocked: ()=>unlocked,
+  longTermProg: ()=>longTermProg,
+  monthlyProg: ()=>monthlyProg,
+  weeklyProg: ()=>weeklyProg,
+  weekendProg: ()=>weekendProg
+};
+
+const serializedStorageCache = Object.create(null);
+let persistTimer = null;
+
+function flushPersist(){
+  if(persistTimer){
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  Object.keys(STORAGE_GETTERS).forEach((key)=>{
+    const nextValue = JSON.stringify(STORAGE_GETTERS[key]());
+    if(serializedStorageCache[key] !== nextValue){
+      localStorage.setItem(key, nextValue);
+      serializedStorageCache[key] = nextValue;
+    }
+  });
+}
+
 
 // state
 let entries=lsGet("workout_entries",[]);
@@ -376,6 +962,14 @@ let journalLog=lsGet("journal_log",[]);
 let weeklyMantra=lsGet("weekly_mantra","");
 let checkins=lsGet("daily_checkins",[]);
 let achievements=lsGet("achievements",[]);
+let habitDefs=normalizeHabitDefs(lsGet("habit_defs", defaultHabitDefs()));
+let readinessLog=lsGet("readiness_log",{});
+let workoutTemplates=lsGet("workout_templates", defaultWorkoutTemplates());
+let customChallenges=lsGet("custom_challenges", defaultCustomChallenges());
+let activeChallengeId=lsGet("active_challenge_id", "");
+let weeklyPlan=Object.assign(defaultWeeklyPlan(), lsGet("weekly_plan", {}));
+let reminderSettings=Object.assign(defaultReminderSettings(), lsGet("reminder_settings", {}));
+let lastBackupExport=lsGet("last_backup_export",{date:"", text:""});
 
 let weekEpoch=lsGet("week_epoch_snapshot",mondayOfThisWeekISO());
 let lastWeekSnapshot=lsGet("last_week_snapshot",{total:0,ts:mondayOfThisWeekISO()});
@@ -384,9 +978,7 @@ let adaptiveGoals=lsGet("adaptive_goals",{strength:5,cardio:3,mobility:3});
 let useAdaptive=true;
 let firedFlags=lsGet("fired_flags",{});
 let todaysWins=lsGet("todays_wins",{}); // {YYYY-MM-DD: true}
-let moodLog=lsGet("mood_log",{}); // {YYYY-MM-DD: "😐"}
 let monthTheme=lsGet("month_theme","Consistency > Intensity");
-let whyDoingThis=lsGet("why_doing_this","");
 let lowEnergy=lsGet("low_energy",false);
 let unlocked=lsGet("unlocked",{}); // {key:true}
 
@@ -431,7 +1023,7 @@ function maybeRolloverWeek(){
 }
 maybeRolloverWeek();
 updateAdaptiveGoals();
-recomputeSessionCounters();
+rebuildDerivedProgress();
 
 // scoring
 function calcStrengthDensity(entry){
@@ -471,7 +1063,7 @@ function recomputeSessionCounters(){
     monthlyProg.yogaSessions = uniqueDaysCount(isYoga);
   }
 
-  // weekend warrior: count days within current weekend bucket if you’re using it as per-day too.
+  // weekend warrior: count days within current weekend bucket if youâ€™re using it as per-day too.
   // If weekendProg has yogaSessions, make it per-day within weekend by filtering dates in weekend range.
   if(typeof weekendProg==="object" && weekendProg){
     // Weekend definition: Sat+Sun of current week epoch (weekEpoch)
@@ -494,6 +1086,56 @@ function recomputeSessionCounters(){
   }
 }
 
+function rebuildDerivedProgress(){
+  const thisMonth = monthKey(todayISO());
+  monthlyProg = {swings:0,cyclingKm:0,distanceKm:0,walkKm:0,yogaSessions:0,mobilitySessions:0,pushups:0,floors:0};
+  weeklyProg = {strengthSessions:0,cardioSessions:0,distanceKm:0,rowingKm:0,reps:0,plankSec:0,mobilitySessions:0,floors:0,steps:0};
+  weekendProg = {swings:0,distanceKm:0,footKm:0,yogaSessions:0,reps:0,circuitEx:0,strengthSessions:0};
+
+  (entries||[]).forEach(rec=>{
+    const dateKey = (rec.date||"").slice(0,10);
+    if(!dateKey) return;
+    const cat = String(rec.category||"").toLowerCase();
+    const kmVal = (parseFloat(rec.km)||0) + (parseFloat(rec.miles)||0)*1.60934;
+    const swingsVal = parseFloat(rec.swings)||0;
+    const pushupsVal = parseFloat(rec.pushups)||0;
+    const floorsVal = parseFloat(rec.floors)||0;
+    const plankVal = parseFloat(rec.plank)||0;
+    const stepsVal = parseFloat(rec.steps)||0;
+    const circuitExVal = parseFloat(rec.circuitEx)||0;
+    const isYoga = /yoga|stretch/.test(cat);
+    const isCurrentWeek = dateKey >= weekEpoch && dateKey < addDaysISO(weekEpoch, 7);
+    const wd = new Date(dateKey+"T00:00:00").getDay();
+    const isWeekend = wd===6 || wd===0;
+
+    if(dateKey.slice(0,7)===thisMonth){
+      monthlyProg.swings += swingsVal;
+      monthlyProg.cyclingKm += /cycle|bike|cycling/.test(cat) ? kmVal : 0;
+      monthlyProg.walkKm += /walk/.test(cat) ? kmVal : 0;
+      monthlyProg.pushups += pushupsVal;
+      if(isYoga) monthlyProg.mobilitySessions += 1;
+    }
+
+    if(isCurrentWeek){
+      weeklyProg.floors += floorsVal;
+      weeklyProg.distanceKm += /running|row|cycle|bike|cycling/.test(cat) ? kmVal : 0;
+      weeklyProg.rowingKm += /row/.test(cat) ? kmVal : 0;
+      weeklyProg.steps += stepsVal;
+      weeklyProg.plankSec += plankVal;
+      if(isYoga) weeklyProg.mobilitySessions += 1;
+    }
+
+    if(isWeekend){
+      weekendProg.swings += swingsVal;
+      weekendProg.distanceKm += kmVal;
+      weekendProg.circuitEx += circuitExVal;
+      if(/walk|running|hike/.test(cat)) weekendProg.footKm += kmVal;
+    }
+  });
+
+  recomputeSessionCounters();
+}
+
 
 
 
@@ -509,8 +1151,8 @@ function registerActivity(){ /* no-op: used by habit tracking */ }
 function computeLifestylePoints(weekStart){
   // Lifestyle scoring (simple + consistent):
   // Per habit per week:
-  //   0–4 days = 0 pts
-  //   5–6 days = 5 pts
+  //   0â€“4 days = 0 pts
+  //   5â€“6 days = 5 pts
   //   7 days   = 10 pts
   const HABIT_KEYS = ["sleep7","steps","outside","no_sugar","reading","mindbody","declutter30"];
   const s=new Date(weekStart+"T00:00:00");
@@ -575,36 +1217,13 @@ function calcWeekTotalPoints(weekStart){
 }
 
 // persist
-function persist(){
-  lsSet("workout_entries",entries);
-  lsSet("bp_log",bpLog);
-  lsSet("h_log",hLog);
-  lsSet("weight_start", weightStart);
-  lsSet("weight_goal", weightGoal);
-  lsSet("lw_days",lwDays);
-  lsSet("lw_epoch",lwEpoch);
-  lsSet("focus_week",focusWeek);
-  lsSet("reflections",reflections);
-  lsSet("mot_log",motLog);  lsSet("week_epoch_snapshot",weekEpoch);
-  lsSet("last_week_snapshot",lastWeekSnapshot);
-  lsSet("weekly_goal",goal);
-  lsSet("fired_flags",firedFlags);
-  lsSet("monthlyProg",monthlyProg);
-  lsSet("weeklyProg",weeklyProg);
-  lsSet("weekendProg",weekendProg);
-  lsSet("todays_wins",todaysWins);
-  lsSet("mood_log",moodLog);
-  lsSet("month_theme",monthTheme);
-  lsSet("why_doing_this",whyDoingThis);
-  lsSet("low_energy",lowEnergy);
-  lsSet("unlocked",unlocked);
-  // Motivation tab storage
-  lsSet("gratitude_log", gratitudeLog);
-  lsSet("journal_log", journalLog);
-  lsSet("weekly_mantra", weeklyMantra);
-  lsSet("daily_checkins", checkins);
-  lsSet("achievements", achievements);
-
+function persist(immediate=false){
+  if(immediate){
+    flushPersist();
+    return;
+  }
+  if(persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(flushPersist, 120);
 }
 
 // Backup / Restore helpers (useful when the app is opened from a different file name/path)
@@ -612,8 +1231,9 @@ const MOMENTUM_DATA_KEYS = [
   "workout_entries","bp_log","h_log","weight_start","weight_goal",
   "lw_days","lw_epoch","focus_week","reflections","mot_log",
   "gratitude_log","journal_log","weekly_mantra","daily_checkins","achievements",
+  "habit_defs","readiness_log","workout_templates","custom_challenges","active_challenge_id","weekly_plan","reminder_settings","last_backup_export",
   "week_epoch_snapshot","last_week_snapshot","weekly_goal","adaptive_goals",
-  "fired_flags","todays_wins","mood_log","month_theme","why_doing_this","low_energy","unlocked",
+  "fired_flags","todays_wins","month_theme","low_energy","unlocked",
   "longTermProg","monthlyProg","weeklyProg","weekendProg",
   "last_cat"
 ];
@@ -664,6 +1284,7 @@ function hardResetWeeklyScore(){
   lwEpoch = mondayOfThisWeekISO();
   lastWeekSnapshot = {total:0, ts:weekEpoch};
   firedFlags[weekEpoch]=false;
+  rebuildDerivedProgress();
   persist();
   showToast("Weekly score and lifestyle reset");
   renderOverview();
@@ -686,47 +1307,97 @@ function resetWeekend(){
 function renderOverview(){
   const wrap=document.getElementById("screen-overview");
   const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal}=calcWeekComponents(weekEpoch);
-  const lastWeekTotal=lastWeekSnapshot.total||0;
-  const lastWeek = (lastWeekSnapshot && lastWeekSnapshot.ts) ? calcWeekComponents(lastWeekSnapshot.ts) : null;
-  const diff=thisWeekTotal-lastWeekTotal;
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
-
   const t=todayISO();
   const winDone=!!todaysWins[t];
-  const moods=["😞","😐","🙂","😄","🔥"];
-  const start=new Date(weekEpoch);
-  const weekStrip=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(start); d.setDate(d.getDate()+i);
-    const dk=d.toISOString().slice(0,10);
-    weekStrip.push(moodLog[dk]||"•");
-  }
-
   const workoutsThisWeek = entries.filter(e=>e.date>=weekEpoch).length;
   const healthThisWeek = bpLog.filter(r=>r.date>=weekEpoch).length + hLog.filter(r=>r.date>=weekEpoch).length;
-  const reflectionsThisWeek = reflections.filter(r=>r.date>=weekEpoch).length;
-  const gratitudeThisWeek = (typeof gratitudeLog!=="undefined" ? gratitudeLog.filter(r=>r.date>=weekEpoch).length : 0);
-  const journalThisWeek = (typeof journalLog!=="undefined" ? journalLog.filter(r=>r.date>=weekEpoch).length : 0);
+  const reflectionsThisWeek = reflections.filter(r=>(r.week||r.date)>=weekEpoch).length;
+  const gratitudeThisWeek = gratitudeLog.filter(r=>r.date>=weekEpoch).length;
+  const journalThisWeek = journalLog.filter(r=>r.date>=weekEpoch).length;
+  const todayHabits = habitDefs.reduce((s,h)=>s+(lwDays?.[t]?.[h.key]?1:0),0);
+  const todayWorkouts = entries.filter(e=>(e.date||"").slice(0,10)===t).length;
+  const readiness = getTodayReadiness();
+  const readinessScore = readinessScoreFor(t);
+  const todayPlan = buildTodayPlan();
+  const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
+  const activeChallengeProgress = getChallengeProgress(activeChallenge);
+  const recentBadges = achievements.filter(a=>a.type==="challenge_badge").slice(0,3);
+  const records = computeRecords();
+  const todaySlot = weeklyPlanLabel(t);
+  const nextSlot = weeklyPlanLabel(addDaysISO(t,1));
+  const toneClass = planTone(todayPlan.label + " " + todaySlot);
+  const laggingHabit = getLaggingHabit();
+  const planDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const last14 = [];
+  for(let i=13;i>=0;i--){
+    const day = addDaysISO(t, -i);
+    const row = lwDays?.[day] || {};
+    const count = habitDefs.reduce((s,h)=>s+(row[h.key]?1:0),0);
+    last14.push({ day, count, hasWorkout: entries.some(e=>(e.date||"").slice(0,10)===day) });
+  }
+
+  const todayPlanButtons = todayPlan.actions.map(action=>`<button class="btn ${todayPlan.tone==="primary"?"primary":"soft"}" data-plan-action="${escapeAttr(action)}">${escapeHtml(action)}</button>`).join("");
+  const weekPlanHtml = planDays.map(day=>`<button class="day-pill ${day===dayKeyFromISO(t)?"active":""}" type="button" data-edit-plan="${day}"><strong>${day}</strong><span class="small">${escapeHtml(weeklyPlan[day] || "Open")}</span></button>`).join("");
+  const calendarHtml = last14.map(day=>{
+    const css = `${day.count || day.hasWorkout ? "good" : "empty"} ${day.day===t ? "active" : ""}`.trim();
+    return `<div class="calendar-day ${css}"><div class="small">${day.day.slice(5)}</div><div class="badge-num">${day.count}</div><div class="small">${day.hasWorkout?"Workout":"-"}</div></div>`;
+  }).join("");
+  const badgeHtml = recentBadges.length ? recentBadges.map(b=>`<div class="list-row soft"><div style="flex:1;"><div style="font-weight:600;">${escapeHtml(b.rewardName || "Badge")}</div><div class="small">${escapeHtml(b.badgeTier || "Bronze")} tier - ${escapeHtml(b.name || "Challenge")} - ${escapeHtml((b.completedAt||"").slice(0,10))}</div></div></div>`).join("") : '<div class="small">No challenge badges yet.</div>';
+  const laggingText = laggingHabit ? `Most ignored habit: ${escapeHtml(laggingHabit.label)}${laggingHabit.gap > 0 ? ` (${laggingHabit.gap} days ago)` : " - already checked recently"}` : "No habit drift right now.";
 
   wrap.innerHTML=`
-    <div class="card">
-      <h2>✨ Today</h2>
-      <div class="row-between" style="align-items:center;">
-        <div class="small" style="flex:1;">No pressure. One tiny action is enough.</div>
-        <button class="btn" id="todaysWinBtn">${winDone?"Shown up ✓":"I showed up today"}</button>
-      </div>
-
-      <div style="margin-top:12px;">
-        <div class="small" style="margin-bottom:6px;">Mood check-in</div>
-        <div class="btn-row" style="gap:6px;">
-          ${moods.map(m=>`<button class="btn" data-mood="${m}" style="padding:8px 10px;min-width:44px;">${m}</button>`).join("")}
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">Momentum Today</div>
+          <h2 class="hero-title">${todayPlan.label}</h2>
+          <div class="small hero-sub">${todayPlan.text}</div>
+          <div class="hero-badges">
+            <div class="pill ${toneClass}">Today plan: ${escapeHtml(todaySlot)}</div>
+            <div class="pill">Next up: ${escapeHtml(nextSlot)}</div>
+            <div class="pill">Weekly goal ${thisWeekTotal}/${goal}</div>
+          </div>
         </div>
-        <div class="small" style="margin-top:10px;">This week: <span style="letter-spacing:.2rem;">${weekStrip.join(" ")}</span></div>
+        <div class="score-pill">
+          <div class="small">Readiness</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${readinessScore==null?"-":readinessScore}</div>
+        </div>
+      </div>
+      <div class="quick-grid" style="margin-top:14px;">
+        <div class="stat-chip"><div class="row-between"><div>Habits</div><div class="badge-num">${todayHabits}/${habitDefs.length}</div></div><div class="small">Done today</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Workout</div><div class="badge-num">${todayWorkouts}</div></div><div class="small">Sessions today</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Recovery</div><div class="badge-num">${readinessScore==null?"-":readinessScore}</div></div><div class="small">Energy ${readiness.energy||"-"} / Soreness ${readiness.soreness||"-"}</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Record</div><div class="badge-num">${records.bestWeek.value || 0}</div></div><div class="small">Best week points</div></div>
+      </div>
+      <div class="hero-panel" style="margin-top:14px;">
+        <div class="section-title"><strong>Focus for today</strong><span class="pill ${toneClass}">${escapeHtml(todaySlot)}</span></div>
+        <div class="small" style="margin-top:8px;">${laggingText}</div>
+        <div class="btn-row">${todayPlanButtons}</div>
+      </div>
+      <div class="fab-row">
+        <button class="btn primary" id="quickHabitBtn">Open habits</button>
+        <button class="btn primary" id="quickWorkoutBtn">Open workout</button>
+      </div>
+      <div class="btn-row sticky-actions" style="margin-top:10px;">
+        <button class="btn" id="openHistoryBtn">View history</button>
+        <button class="btn" id="todaysWinBtn">${winDone?"Shown up today":"I showed up today"}</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>🏁 Weekly Score <span class="subtle">(${weekEpoch} → now)</span></h2>
+      <div class="section-title"><h2 style="margin:0;">Weekly Plan</h2><span class="pill ${toneClass}">${escapeHtml(todaySlot)}</span></div>
+      <div class="small">Tap a day to rename its plan.</div>
+      <div class="week-plan">${weekPlanHtml}</div>
+    </div>
+
+    <div class="card">
+      <h2>Focus Challenge</h2>
+      ${activeChallenge ? `<div class="row-between"><div style="font-weight:600;">${escapeHtml(activeChallenge.name || "Custom challenge")}</div><div class="badge-num">${activeChallengeProgress.value}/${activeChallengeProgress.target}</div></div><div class="small">${escapeHtml(activeChallengeProgress.label)}</div><div class="progress-bg"><div class="progress-fg" style="width:${activeChallengeProgress.pct}%;"></div></div><div class="btn-row"><button class="btn soft" id="manageChallengeBtn">Manage challenge</button></div>` : `<div class="small">No focus challenge pinned yet.</div><div class="btn-row"><button class="btn soft" id="manageChallengeBtn">Create one</button></div>`}
+    </div>
+
+    <div class="card">
+      <h2>Weekly Score <span class="subtle">(${weekEpoch} -> now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
@@ -741,46 +1412,93 @@ function renderOverview(){
     </div>
 
     <div class="card">
-      <h2>📊 Breakdown</h2>
-      <div class="row-between"><div>🏋️ Workout</div><div>${workoutPts} pts</div></div>
-      <div class="row-between"><div>🌿 Lifestyle</div><div>${lifestylePts} pts</div></div>
-      <div class="row-between"><div>❤️ Health</div><div>${healthPts} pts</div></div>
-      <div class="row-between"><div>💫 Motivation</div><div>${motivationPts} pts</div></div>
-      <div class="row-between"><div>✨ Bonus</div><div>${bonusPts} pts</div></div>
+      <h2>Consistency Calendar</h2>
+      <div class="small">Last 14 days of habits and workouts.</div>
+      <div class="calendar-strip">${calendarHtml}</div>
     </div>
 
     <div class="card">
-      <h2>🎬 Weekly Highlight Reel</h2>
+      <h2>Personal Records</h2>
+      <div class="record-grid">
+        <div class="record-card"><div class="small">Longest workout</div><div class="record-value">${records.longestWorkout.value || 0} min</div><div class="small">${escapeHtml(records.longestWorkout.label || "No workout yet")} ${records.longestWorkout.date ? `- ${records.longestWorkout.date}` : ""}</div></div>
+        <div class="record-card"><div class="small">Most steps</div><div class="record-value">${records.mostSteps.value || 0}</div><div class="small">${records.mostSteps.date || "No step log yet"}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Recent Badges</h2>
+      ${badgeHtml}
+    </div>
+
+    <div class="card">
+      <h2>Breakdown</h2>
+      <div class="row-between"><div>Workout</div><div>${workoutPts} pts</div></div>
+      <div class="row-between"><div>Lifestyle</div><div>${lifestylePts} pts</div></div>
+      <div class="row-between"><div>Health</div><div>${healthPts} pts</div></div>
+      <div class="row-between"><div>Motivation</div><div>${motivationPts} pts</div></div>
+      <div class="row-between"><div>Bonus</div><div>${bonusPts} pts</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Weekly Highlight Reel</h2>
       <div class="small">Just the facts. You did more than you think.</div>
-      <div class="list-row"><div style="flex:1;">🏋️ Workouts logged</div><div class="badge-num">${workoutsThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">🩺 Health entries</div><div class="badge-num">${healthThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">🙏 Gratitude notes</div><div class="badge-num">${gratitudeThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">📝 Journal entries</div><div class="badge-num">${journalThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">🌙 Reflections</div><div class="badge-num">${reflectionsThisWeek}</div></div>
+      <div class="list-row"><div style="flex:1;">Workouts logged</div><div class="badge-num">${workoutsThisWeek}</div></div>
+      <div class="list-row"><div style="flex:1;">Health entries</div><div class="badge-num">${healthThisWeek}</div></div>
+      <div class="list-row"><div style="flex:1;">Gratitude notes</div><div class="badge-num">${gratitudeThisWeek}</div></div>
+      <div class="list-row"><div style="flex:1;">Journal entries</div><div class="badge-num">${journalThisWeek}</div></div>
+      <div class="list-row"><div style="flex:1;">Reflections</div><div class="badge-num">${reflectionsThisWeek}</div></div>
     </div>
 
     <div class="card">
-      <h2>🧭 Why I’m doing this</h2>
-      <div class="small">One sentence. Your anchor.</div>
-      <input class="input" id="whyInput" value="${escapeAttr(whyDoingThis)}" placeholder="Example: I want to feel strong and calm in my body.">
-      <button class="btn" id="saveWhyBtn">Save</button>
+      <h2>Recovery Check</h2>
+      <div class="mini-grid">
+        <label class="small">Energy<select class="input" id="todayEnergy">${[1,2,3,4,5].map(n=>`<option value="${n}" ${Number(readiness.energy)===n?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="small">Soreness<select class="input" id="todaySoreness">${[1,2,3,4,5].map(n=>`<option value="${n}" ${Number(readiness.soreness)===n?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="small">Sleep<input class="input" id="todaySleep" inputmode="decimal" value="${escapeAttr(readiness.sleep||"")}" placeholder="7.5"></label>
+      </div>
+      <textarea class="input" id="todayRecoveryNote" placeholder="Short note for today">${escapeHtml(readiness.note||"")}</textarea>
+      <button class="btn" id="saveRecoveryBtn">Save recovery</button>
+    </div>
+
+    <div class="card">
+      <h2>Reminders & Safety</h2>
+      <div class="small">Installed HTML apps on Android can nudge you when the app is opened and notification permission is granted. Fully offline scheduled alarms need a native app wrapper.</div>
+      <div class="mini-grid" style="margin-top:12px;">
+        <label class="small">Reminder<select class="input" id="reminderEnabled"><option value="off" ${!reminderSettings.enabled?"selected":""}>Off</option><option value="on" ${reminderSettings.enabled?"selected":""}>On</option></select></label>
+        <label class="small">Time<input class="input" id="reminderTime" type="time" value="${escapeAttr(reminderSettings.time||"19:00")}"></label>
+        <div class="stat-chip"><div class="row-between"><div>Backup</div><div class="badge-num">${lastBackupExport?.date || "Never"}</div></div><div class="small">Use Export data after big updates.</div></div>
+      </div>
+      <div class="btn-row"><button class="btn" id="saveReminderBtn">Save reminder</button><button class="btn soft" id="enableNotifBtn">Enable notifications</button></div>
     </div>
   `;
 
   wrap.querySelector("#resetWeeklyScoreBtn").onclick=()=>{hardResetWeeklyScore();};
-
   wrap.querySelector("#todaysWinBtn").onclick=()=>{
     todaysWins[t]=true;
     persist();
     showToast(compliment());
     renderOverview();
   };
-
-  wrap.querySelectorAll("[data-mood]").forEach(b=>{
-    b.onclick=()=>{
-      moodLog[t]=b.getAttribute("data-mood");
+  wrap.querySelector("#quickHabitBtn").onclick=()=>showScreen("lifestyle");
+  wrap.querySelector("#quickWorkoutBtn").onclick=()=>showScreen("workout");
+  wrap.querySelector("#openHistoryBtn").onclick=()=>showScreen("history");
+  wrap.querySelector("#manageChallengeBtn").onclick=()=>showScreen("workout");
+  wrap.querySelectorAll("[data-plan-action]").forEach(btn=>{
+    btn.onclick=()=>{
+      const action = btn.getAttribute("data-plan-action") || "";
+      if(/habit/i.test(action)) showScreen("lifestyle");
+      else showScreen("workout");
+    };
+  });
+  wrap.querySelectorAll("[data-edit-plan]").forEach(btn=>{
+    btn.onclick=()=>{
+      const day = btn.getAttribute("data-edit-plan") || "Mon";
+      const current = weeklyPlan[day] || "Open";
+      const next = prompt(`Plan for ${day}`, current);
+      if(next === null) return;
+      weeklyPlan[day] = (next || "Open").trim() || "Open";
       persist();
-      showToast("Noted");
+      showToast(`${day} plan saved`);
       renderOverview();
     };
   });
@@ -794,17 +1512,39 @@ function renderOverview(){
     showToast("Saved");
     renderOverview();
   };
-
-  wrap.querySelector("#saveWhyBtn").onclick=()=>{
-    whyDoingThis = wrap.querySelector("#whyInput").value.trim();
+  wrap.querySelector("#saveRecoveryBtn").onclick=()=>{
+    readinessLog[t] = {
+      energy:Number(wrap.querySelector("#todayEnergy").value)||3,
+      soreness:Number(wrap.querySelector("#todaySoreness").value)||3,
+      sleep:(wrap.querySelector("#todaySleep").value||"").trim(),
+      note:(wrap.querySelector("#todayRecoveryNote").value||"").trim()
+    };
     persist();
-    showToast("Saved");
+    showToast("Recovery saved");
+    renderOverview();
+  };
+  wrap.querySelector("#saveReminderBtn").onclick=()=>{
+    reminderSettings.enabled = wrap.querySelector("#reminderEnabled").value === "on";
+    reminderSettings.time = wrap.querySelector("#reminderTime").value || "19:00";
+    if("Notification" in window) reminderSettings.permission = Notification.permission;
+    persist();
+    showToast("Reminder settings saved");
+  };
+  wrap.querySelector("#enableNotifBtn").onclick=async ()=>{
+    if(!("Notification" in window)){
+      showToast("Notifications are not supported here");
+      return;
+    }
+    const result = await Notification.requestPermission();
+    reminderSettings.permission = result;
+    persist();
+    showToast(result === "granted" ? "Notifications enabled" : "Notification permission not granted");
+    renderOverview();
   };
 
   if(workoutsThisWeek>=3) maybeUnlock("three_workouts_week","3 workouts in a week");
   if(workoutsThisWeek>0 && healthThisWeek>0) maybeUnlock("health_and_workout_week","Health + Workout in one week");
 }
-
 
 // HEALTH (date pickers!)
 function renderHealth(){
@@ -821,7 +1561,7 @@ function renderHealth(){
   wrap.innerHTML=`
     
 <div class="card">
-  <h2>🎯 Weight Goal</h2>
+  <h2>Weight Goal</h2>
   <label class="input-label">Starting weight (lb)</label>
   <input class="input" id="wsInput" inputmode="decimal" value="${weightStart??""}"/>
   <label class="input-label">Goal weight (lb)</label>
@@ -830,16 +1570,16 @@ function renderHealth(){
 
   <div class="row-between" style="margin-top:12px;">
     <div>Current</div>
-    <div class="badge-num">${currentWeight()??"—"} lb</div>
+    <div class="badge-num">${currentWeight()??"-"} lb</div>
   </div>
   
   <div class="row-between">
     <div>Lost</div>
-    <div class="badge-num">${weightLost()??"—"} lb</div>
+    <div class="badge-num">${weightLost()??"-"} lb</div>
   </div>
   <div class="row-between">
     <div>To goal</div>
-    <div class="badge-num">${weightToGoal()??"—"} lb</div>
+    <div class="badge-num">${weightToGoal()??"-"} lb</div>
   </div>
 
   <div style="margin-top:10px;">
@@ -855,7 +1595,7 @@ function renderHealth(){
 
 <div class="card" id="health-weight-card">
 
-      <h2>🩺 Health — Weight & Body Comp</h2>
+      <h2>Health - Weight & Body Comp</h2>
       <label class="input-label">Date</label>
       <input class="input" id="wDate" type="date" value="${todayISO()}"/>
       <label class="input-label">Weight (lb)</label>
@@ -866,10 +1606,10 @@ function renderHealth(){
       <input class="input" id="wFat" inputmode="decimal"/>
       <label class="input-label">Muscle (%)</label>
       <input class="input" id="wMuscle" inputmode="decimal"/>
-      <button class="btn" id="saveHealth">💾 Save to Log</button>
+      <button class="btn" id="saveHealth">Save to Log</button>
 
       <div class="row-between" style="margin-top:16px;">
-        <div class="row-left">📊 Health Log (last 4)</div>
+        <div class="row-left">Health Log (last 4)</div>
         <div class="row-right"><button class="btn" id="dlWeightCsvBtn">Download CSV</button></div>
       </div>
       ${
@@ -877,16 +1617,16 @@ function renderHealth(){
         ? last4H.map(r=>`
           <div class="list-row">
             <div style="flex:1;">
-               ${r.date} • ${r.weight||""}lb • ${r.lbm?("LBM "+r.lbm+"lb • "):""}${r.bodyfat||""}% • ${r.muscle||""}%
+               ${r.date} - ${r.weight||""}lb - ${r.lbm?("LBM "+r.lbm+"lb - "):""}${r.bodyfat||""}% - ${r.muscle||""}%
             </div>
-            <div class="del" data-del-health="${r.id}">🗑️</div>
+            <div class="del" data-del-health="${r.id}">Delete</div>
           </div>`).join("")
         : `<div class="small">No entries yet.</div>`
       }
     </div>
 
     <div class="card" id="health-bp-card">
-      <h2>❤️ BP Log</h2>
+      <h2>BP Log</h2>
       <label class="input-label">Date</label>
       <input class="input" id="bpDate" type="date" value="${todayISO()}"/>
       <label class="input-label">Systolic</label>
@@ -898,11 +1638,11 @@ function renderHealth(){
         <option value="false">No</option>
         <option value="true">Yes</option>
       </select>
-      <button class="btn" id="saveBP">💾 Save to Log</button>
+      <button class="btn" id="saveBP">Save to Log</button>
       <div class="small" style="margin-top:8px;">${avgBP}</div>
 
       <div class="row-between" style="margin-top:16px;">
-        <div class="row-left">📊 BP Log (last 4)</div>
+        <div class="row-left">BP Log (last 4)</div>
         <div class="row-right"><button class="btn" id="dlBpCsvBtn">Download CSV</button></div>
       </div>
       ${
@@ -910,9 +1650,9 @@ function renderHealth(){
         ? last4BP.map(r=>`
           <div class="list-row">
             <div style="flex:1;">
-              ${r.date} • ${r.sys}/${r.dia} ${r.meds?"(meds)":""}
+              ${r.date} - ${r.sys}/${r.dia} ${r.meds?"(meds)":""}
             </div>
-            <div class="del" data-del-bp="${r.id}">🗑️</div>
+            <div class="del" data-del-bp="${r.id}">Delete</div>
           </div>`).join("")
         : `<div class="small">No BP data yet.</div>`
       }
@@ -969,9 +1709,10 @@ function renderHealth(){
 
   wrap.querySelectorAll("[data-del-health]").forEach(btn=>{
     btn.onclick=()=>{
-      const id=btn.getAttribute("data-del-health");
-      hLog=hLog.filter(x=>x.id!==id);
+      const id = btn.getAttribute("data-del-health") || "";
+      hLog = hLog.filter(x=>x.id!==id);
       persist();
+      showToast("Health entry removed");
       renderHealth();
     };
   });
@@ -994,11 +1735,12 @@ function renderHealth(){
     };
   }
 
-wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
+  wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
     btn.onclick=()=>{
-      const id=btn.getAttribute("data-del-bp");
-      bpLog=bpLog.filter(x=>x.id!==id);
+      const id = btn.getAttribute("data-del-bp") || "";
+      bpLog = bpLog.filter(x=>x.id!==id);
       persist();
+      showToast("BP entry removed");
       renderHealth();
     };
   });
@@ -1007,24 +1749,15 @@ wrap.querySelectorAll("[data-del-bp]").forEach(btn=>{
 // LIFESTYLE (date picker + per-day checkboxes stored by date)
 function renderLifestyle(){
   const wrap=document.getElementById("screen-lifestyle");
-
-  // Habits (simplified)
-  const HABITS=[
-    {key:"sleep7",       label:"Sleep ≥7h 😴"},
-    {key:"steps",        label:"Steps ≥ 15,000 🚶"},
-    {key:"outside",      label:"Outside time ≥ 30 min 🌳"},
-    {key:"no_sugar",     label:"No added sugar 🍬🚫"},
-    {key:"reading",      label:"Reading 📖"},
-    {key:"mindbody",     label:"Meditation or Stretch/Yoga 🧘"},
-    {key:"declutter30",  label:"Declutter/Clean 30 min 🧼"}
-  ];
+  const HABITS = normalizeHabitDefs(habitDefs);
+  habitDefs = HABITS;
 
   function iso(d){ return d.toISOString().slice(0,10); }
   function parseISO(s){ const d=new Date((s||todayISO())+"T00:00:00"); d.setHours(0,0,0,0); return d; }
   function weekStartFromISO(s){
     const d=parseISO(s);
     const g=d.getDay();
-    const diff=(g===0?-6:1)-g; // Monday start
+    const diff=(g===0?-6:1)-g;
     d.setDate(d.getDate()+diff);
     return iso(d);
   }
@@ -1032,15 +1765,10 @@ function renderLifestyle(){
     const d=parseISO(isoStr); d.setDate(d.getDate()+n); return iso(d);
   }
 
-  // Keep the selected date across re-renders / tab switches
-  let selectedDate = window._lifeSelected || lsGet("life_selected_date", null) || todayISO();
-  if(!selectedDate) selectedDate = todayISO();
+  let selectedDate = window._lifeSelected || todayISO();
   window._lifeSelected = selectedDate;
-
-  // Week shown is based on the selected date
   lwEpoch = weekStartFromISO(selectedDate);
   const weekStart = lwEpoch;
-
   const days=[0,1,2,3,4,5,6].map(i=>addDays(weekStart,i));
   const dayLabels=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
@@ -1064,8 +1792,10 @@ function renderLifestyle(){
   const weekPoints = HABITS.reduce((s,h)=>s+habitWeekPoints(h.key),0);
   const maxWeekPoints = HABITS.length * 10;
   const pct = Math.min(100, Math.round((weekPoints/(maxWeekPoints||1))*100));
+  const todayKey = todayISO();
+  const todayChecks = HABITS.reduce((s,h)=>s+(lwDays?.[todayKey]?.[h.key]?1:0),0);
+  const selectedChecks = HABITS.reduce((s,h)=>s+(lwDays?.[selectedDate]?.[h.key]?1:0),0);
 
-  // Streak (any habit checked) ending today
   function anyHabitStreak(){
     const end = parseISO(todayISO());
     let cur = new Date(end);
@@ -1082,53 +1812,47 @@ function renderLifestyle(){
   }
   const overallStreak = anyHabitStreak();
 
-  const todayKey = todayISO();
-  const todayChecks = HABITS.reduce((s,h)=>s+(lwDays?.[todayKey]?.[h.key]?1:0),0);
-  const selectedChecks = HABITS.reduce((s,h)=>s+(lwDays?.[selectedDate]?.[h.key]?1:0),0);
-
   wrap.innerHTML=`
     <div class="card">
-      <h2>🌿 Lifestyle</h2>
-      <div class="small">
-        Today: <span class="badge-num">${todayChecks}</span> / ${HABITS.length}
-        • Streak: <span class="badge-num">${overallStreak}</span> days
-      </div>
-
-      <div style="margin-top:10px;">
-        <div class="row-between">
-          <div>Weekly lifestyle points</div>
-          <div class="badge-num">${weekPoints} / ${maxWeekPoints}</div>
+      <h2>Lifestyle</h2>
+      <div class="small">Today-first habit tracking with editable habits.</div>
+      <div class="quick-grid" style="margin-top:12px;">
+        <div class="stat-chip">
+          <div class="row-between"><div>Today</div><div class="badge-num">${todayChecks}/${HABITS.length}</div></div>
+          <div class="small">Habits checked</div>
         </div>
-        <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
-        <div class="small" style="margin-top:8px;opacity:.85;">Scoring: per habit weekly — 5/7 = 5 pts, 7/7 = 10 pts.</div>
+        <div class="stat-chip">
+          <div class="row-between"><div>Streak</div><div class="badge-num">${overallStreak}</div></div>
+          <div class="small">Days with any habit</div>
+        </div>
+        <div class="stat-chip">
+          <div class="row-between"><div>Week points</div><div class="badge-num">${weekPoints}/${maxWeekPoints}</div></div>
+          <div class="small">5/7 = 5 pts, 7/7 = 10 pts</div>
+        </div>
       </div>
-
-      <div class="btn-row" style="margin-top:12px;">
-        <button class="btn danger" id="resetWeekBtn">Reset this week</button>
-      </div>
-
       <div style="margin-top:14px;">
         <label class="input-label">Date</label>
         <input class="input" id="lifeDate" type="date" value="${selectedDate}"/>
-        <div class="small" style="margin-top:-6px;">
-          Selected: <span class="badge-num">${selectedChecks}</span> / ${HABITS.length} • Tap a habit to toggle it for the selected date.
-        </div>
+        <div class="small" style="margin-top:-6px;">Selected: <span class="badge-num">${selectedChecks}</span> / ${HABITS.length}</div>
+      </div>
+      <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="btn danger" id="resetWeekBtn">Reset this week</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>✅ Habits</h2>
+      <h2>Habits</h2>
       ${HABITS.map(h=>{
         const done=countHabitWeek(h.key);
         const isOn=getCell(selectedDate,h.key);
         const p=Math.min(100, Math.round((done/7)*100));
         const pts=habitWeekPoints(h.key);
-        const ptsHtml = pts>0 ? ` • <span class="badge-num">${pts}pts</span>` : "";
         return `
           <div style="margin-bottom:14px;">
             <div class="row-between" style="align-items:center;">
-              <div style="flex:1; font-size:14px;">${h.label}</div>
-              <div class="small" style="margin-right:8px;">${done}/7${ptsHtml}</div>
+              <div style="flex:1; font-size:14px;">${escapeHtml(h.label)}</div>
+              <div class="small" style="margin-right:8px;">${done}/7${pts?` - <span class="badge-num">${pts} pts</span>`:""}</div>
               <label style="display:inline-flex;align-items:center;gap:8px;">
                 <input type="checkbox" data-habit="${h.key}" ${isOn?"checked":""} style="transform:scale(1.2);"/>
               </label>
@@ -1140,47 +1864,57 @@ function renderLifestyle(){
     </div>
 
     <div class="card">
-      <h2>🗓 This week at a glance</h2>
-      <div class="small" style="margin-bottom:10px;">Checks per day (week of ${weekStart})</div>
+      <h2>Habits</h2>
+      <div class="small">Make this app fit your real routines.</div>
+      ${HABITS.map(h=>`
+        <div class="list-row">
+          <div style="flex:1;">${escapeHtml(h.label)}</div>
+          <button class="btn danger" data-del-habit="${h.key}">Delete</button>
+        </div>
+      `).join("")}
+      <input class="input" id="newHabitLabel" placeholder="Add a new habit"/>
+      <div class="btn-row">
+        <button class="btn" id="addHabitBtn">Add habit</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>This Week</h2>
+      <div class="small">Checks per day for the week of ${weekStart}</div>
       ${days.map((d,i)=>{
         const row=lwDays?.[d]||{};
         const c=HABITS.reduce((s,h)=>s+(row[h.key]?1:0),0);
         const isSel = d===selectedDate;
         return `<div class="list-row" style="${isSel ? "background:rgba(16,185,129,.08);padding:8px 10px;border-radius:12px;" : ""}">
-          <div style="flex:1;">${dayLabels[i]} • ${d}</div>
+          <div style="flex:1;">${dayLabels[i]} - ${d}</div>
           <div class="badge-num">${c}</div>
         </div>`;
       }).join("")}
     </div>
   `;
 
-  // Date picker: load that day's state (and its week) immediately
   const dp = wrap.querySelector("#lifeDate");
   if(dp){
     dp.onchange=(ev)=>{
       const v=(ev.target.value || todayISO());
       window._lifeSelected = v;
-      lsSet("life_selected_date", v);
-      persist();
       renderLifestyle();
     };
   }
 
-  // Toggle habits for the currently selected day
   wrap.querySelectorAll('input[type="checkbox"][data-habit]').forEach(cb=>{
     cb.onchange=()=>{
       const key=cb.getAttribute("data-habit");
       const dateKey = wrap.querySelector("#lifeDate")?.value || todayISO();
       setCell(dateKey,key,cb.checked);
       window._lifeSelected = dateKey;
-      lsSet("life_selected_date", dateKey);
+      maybeCompleteCustomChallenge();
       persist();
-      showToast(typeof compliment==="function" ? compliment() : "Saved");
+      showToast("Saved");
       renderLifestyle();
     };
   });
 
-  // Reset only the currently shown week (based on selected date)
   const resetBtn = wrap.querySelector("#resetWeekBtn");
   if(resetBtn){
     resetBtn.onclick=()=>{
@@ -1190,158 +1924,166 @@ function renderLifestyle(){
       renderLifestyle();
     };
   }
+
+  wrap.querySelector("#addHabitBtn").onclick=()=>{
+    const label = (wrap.querySelector("#newHabitLabel").value||"").trim();
+    if(!label) return;
+    const keyBase = label.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"") || ("habit_" + uid());
+    let key = keyBase;
+    let i = 2;
+    while(habitDefs.some(h=>h.key===key)){
+      key = `${keyBase}_${i++}`;
+    }
+    habitDefs = [...habitDefs, {key, label, icon:"Habit"}];
+    persist();
+    showToast("Habit added");
+    renderLifestyle();
+  };
+
+  wrap.querySelectorAll("[data-del-habit]").forEach(btn=>{
+    btn.onclick=()=>{
+      const key = btn.getAttribute("data-del-habit");
+      habitDefs = habitDefs.filter(h=>h.key!==key);
+      Object.keys(lwDays||{}).forEach(day=>{
+        if(lwDays[day] && key in lwDays[day]) delete lwDays[day][key];
+      });
+      persist();
+      showToast("Habit removed");
+      renderLifestyle();
+    };
+  });
 }
 
 
 // WORKOUT (date picker!)
+const WORKOUT_PRESETS = [
+  {label:"Walk 30", category:"Walk", duration:"30", km:"3"},
+  {label:"Strength 45", category:"Strength", duration:"45"},
+  {label:"Yoga 20", category:"Yoga", duration:"20"},
+  {label:"Bike 45", category:"Cycling", duration:"45", km:"15"},
+  {label:"Row 20", category:"Rowing", duration:"20", km:"4"},
+  {label:"15k Steps", category:"Steps", duration:"30", steps:"15000"}
+];
+
+function addWorkoutRecord(rec){
+  entries=[rec,...entries];
+  rebuildDerivedProgress();
+  maybeCompleteCustomChallenge();
+  persist();
+  showToast(compliment());
+  if((monthlyProg.swings||0)>=1000) maybeUnlock("kb_1k_swings_month","1,000 KB swings (month)");
+}
+
 function renderWorkout(){
   const wrap=document.getElementById("screen-workout");
+  if(!wrap) return;
 
-  const monthList=[
-    {label:"💪 Swing Storm (1,000 KB swings)", goal:1000, value:Math.min(1000, monthlyProg.swings||0)},
-    {label:"🚴 Emerald Century (100 miles cycling)", goal:160.9340, value:Math.min(160.9340, monthlyProg.cyclingKm||0), unit:"km"},
-    {label:"🧱 Great Wall Progress (1,000 push-ups)", goal:1000, value:Math.min(1000, monthlyProg.pushups||0)},
-    {label:"🛰️ Zero-G Mobility (20 yoga/stretch sessions)", goal:20, value:Math.min(20, monthlyProg.mobilitySessions||0)},
-    {label:"🚶 Monthly Miles (90 miles walking)", goal:144.8406, value:Math.min(144.8406, monthlyProg.walkKm||0), unit:"km"}
+  const monthList = [
+    `Swing Storm: ${monthlyProg.swings||0}/1000 swings`,
+    `Emerald Century: ${Math.round((monthlyProg.cyclingKm||0) + (monthlyProg.walkKm||0))}/100 km`,
+    `Mobility stack: ${monthlyProg.mobilitySessions||0}/8 sessions`
   ];
-  const weekList=[
-    {label:`🏋️ Iron Week (${useAdaptive?adaptiveGoals.strength:5} strength workouts)`, goal:(useAdaptive?adaptiveGoals.strength:5), value:Math.min((useAdaptive?adaptiveGoals.strength:5), weeklyProg.strengthSessions||0)},
-    {label:`🏃 Cardio Crew (${useAdaptive?adaptiveGoals.cardio:3} sessions)`, goal:(useAdaptive?adaptiveGoals.cardio:3), value:Math.min((useAdaptive?adaptiveGoals.cardio:3), weeklyProg.cardioSessions||0)},
-    {label:"🚣 Engine Room (10 miles rowing)", goal:16.0934, value:Math.min(16.0934, weeklyProg.rowingKm||0), unit:"km"},
-    {label:`🧘 Mobility Flow (${useAdaptive?adaptiveGoals.mobility:3} sessions)`, goal:(useAdaptive?adaptiveGoals.mobility:3), value:Math.min((useAdaptive?adaptiveGoals.mobility:3), weeklyProg.mobilitySessions||0)},
-    {label:"🚶 Step Surge (105,000 steps)", goal:105000, value:Math.min(105000, weeklyProg.steps||0)},
-    {label:"💪 Core Stability (600 sec plank)", goal:600, value:Math.min(600, weeklyProg.plankSec||0)}
+  const weekList = [
+    `Strength block: ${weeklyProg.strengthSessions||0}/3 sessions`,
+    `Cardio engine: ${weeklyProg.cardioSessions||0}/3 sessions`,
+    `Step surge: ${weeklyProg.steps||0}/90000 steps`
   ];
-  const weekendList=[
-    {label:"🥾 On-Foot Half Marathon (13.1 miles)", goal:21.0824, value:Math.min(21.0824, weekendProg.footKm||0), unit:"km"},
-    {label:"📏 Distance Dash (40 miles)", goal:64.3736, value:Math.min(64.3736, weekendProg.distanceKm||0), unit:"km"},
-    {label:"🧘 Recovery Ritual (2 sessions)", goal:2, value:Math.min(2, weekendProg.yogaSessions||0)},
-    {label:"🏁 Power Circuit (100 circuit exercises)", goal:100, value:Math.min(100, weekendProg.circuitEx||0)},
-    {label:"🔥 Sunday Spark (1 strength session)", goal:1, value:Math.min(1, weekendProg.strengthSessions||0)}
+  const weekendList = [
+    `Weekend movement: ${Math.round(weekendProg.distanceKm||0)}/8 km`,
+    `Weekend reset: ${weekendProg.yogaSessions||0}/2 mobility sessions`,
+    `Weekend push: ${weekendProg.reps||0}/200 reps`
   ];
-
-  function sectionChallenges(title,list,resetId){
+  const recentEntries = entries.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,30);
+  const records = computeRecords();
+  const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
+  const activeChallengeProgress = getChallengeProgress(activeChallenge);
+  const challengeIdeas = [
+    "Spring streak - 7 active days in the next 7.",
+    "Iron week - 4 strength sessions this week.",
+    "Step surge - 90k or 105k steps this week.",
+    "Recovery reset - 3 mobility sessions this week.",
+    "Beat last week - top your last workout-point total."
+  ];
+  const compareHtml = (()=>{
+    const thisWeekKey = weekEpoch;
+    const lastWeekKey = addDaysISO(thisWeekKey,-7);
+    const prevWeekKey = addDaysISO(thisWeekKey,-14);
+    const weekWorkoutPts = (wk)=> entries.filter(e=>e.date>=wk && e.date<addDaysISO(wk,7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
+    const tw = weekWorkoutPts(thisWeekKey);
+    const lw = weekWorkoutPts(lastWeekKey);
+    const pw = weekWorkoutPts(prevWeekKey);
+    const thisMonth = monthKey(todayISO());
+    const d0 = new Date(thisMonth+"-01T00:00:00");
+    const lastMonthDate = new Date(d0); lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
+    const lastMonth = lastMonthDate.toISOString().slice(0,7);
+    const monthWorkoutPts = (mk)=> entries.filter(e=>(e.date||"").slice(0,7)===mk).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
+    const tm = monthWorkoutPts(thisMonth);
+    const lm = monthWorkoutPts(lastMonth);
     return `
-    <div class="card">
-      <h2>${title}</h2>
-      ${list.map(item=>{
-        const pct=Math.min(100,Math.round((item.value/(item.goal||1))*100));
-        return `
-          <div style="margin-bottom:16px;">
-            <div class="row-between">
-              <div class="row-left" style="font-weight:500;">${item.label}</div>
-              <div class="row-right">${item.unit==="km" ? `${fmtMiFromKm(item.value)} / ${fmtMiFromKm(item.goal)} mi` : `${Math.round(item.value)} / ${item.goal}`}</div>
-            </div>
-            <div class="challenge-bar-bg">
-              <div class="challenge-bar-fg" style="width:${pct}%;"></div>
-            </div>
-          </div>`;
-      }).join("")}
-      <div class="btn-row">
-        <button class="btn danger" id="${resetId}">Reset Challenges</button>
+      <div class="list-row"><div style="flex:1;">Workout points - this week</div><div class="badge-num">${tw}</div></div>
+      <div class="list-row"><div style="flex:1;">Last week</div><div class="badge-num">${lw}</div></div>
+      <div class="list-row"><div style="flex:1;">Week before</div><div class="badge-num">${pw}</div></div>
+      <div class="list-row"><div style="flex:1;">This month</div><div class="badge-num">${tm}</div></div>
+      <div class="list-row"><div style="flex:1;">Last month</div><div class="badge-num">${lm}</div></div>
+      <div class="list-row"><div style="flex:1;">Best week</div><div class="badge-num">${records.bestWeek.value}${records.bestWeek.label?` <span class="small">(${records.bestWeek.label})</span>`:""}</div></div>
+    `;
+  })();
+
+  function sectionChallenges(title, items, resetId){
+    return `
+      <div class="card">
+        <div class="section-title">
+          <h2 style="margin:0;">${title}</h2>
+          <button class="btn danger" id="${resetId}">Reset</button>
+        </div>
+        ${items.map(item=>`<div class="list-row soft"><div style="flex:1;">${item}</div></div>`).join("")}
       </div>
-    </div>`;
+    `;
   }
 
-  const nowWeek = calcWeekComponents(weekEpoch);
-  const pctWeek = Math.min(100,Math.round((nowWeek.total/(goal||1))*100));
-
-  // show only the most recent 7 days in the workout list
-  const cutoffISO = addDaysISO(todayISO(), -30);
-  const recentEntries = entries
-    .filter(e => (e.date||"") >= cutoffISO)
-    .slice()
-    .sort((a,b)=> (b.date||"").localeCompare(a.date||""));
-
   wrap.innerHTML=`
-    <div class="card">
-      <div class="row-between">
-        <div class="row-left">This Week</div>
-        <div class="row-right">${nowWeek.total}/${goal} pts</div>
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">Workout Builder</div>
+          <h2 class="hero-title">Train fast, log faster</h2>
+          <div class="small hero-sub">Use presets, templates, and challenges so logging on Android feels like two taps, not a chore.</div>
+        </div>
+        <div class="score-pill">
+          <div class="small">Weekly goal</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${goal}</div>
+        </div>
       </div>
-      <div class="progress-bg"><div class="progress-fg" style="width:${pctWeek}%;"></div></div>
-      <div class="small">Includes bonus (${nowWeek.bonusPts} pts)</div>
-
-      <div style="margin-top:12px;font-size:14px;color:var(--text);font-weight:600;">Weekly goal: ${goal}</div>
-      <input class="input" id="goalInput" value="${goal}" inputmode="numeric" style="max-width:100px;">
+      <div class="hero-grid">
+        <div class="hero-panel">
+          <div class="small">Today is planned for</div>
+          <div class="record-value">${escapeHtml(weeklyPlanLabel(todayISO()))}</div>
+          <div class="small">Tomorrow: ${escapeHtml(weeklyPlanLabel(addDaysISO(todayISO(),1)))}</div>
+        </div>
+        <div class="hero-panel">
+          <div class="small">Current focus challenge</div>
+          <div style="font-weight:600;margin-top:8px;">${escapeHtml(activeChallenge?.name || "None active")}</div>
+          <div class="small">${activeChallenge ? `${escapeHtml(activeChallengeProgress.label)} - ${activeChallengeProgress.value}/${activeChallengeProgress.target}` : "Pin a challenge below to keep today sharp."}</div>
+        </div>
+      </div>
     </div>
 
-    
     <div class="card">
-      <h2>📈 Compare</h2>
-      ${(()=>{
-        const thisWeekKey = weekEpoch;
-        const lastWeekKey = addDaysISO(thisWeekKey,-7);
-        const prevWeekKey = addDaysISO(thisWeekKey,-14);
-
-        const weekWorkoutPts = (wk)=> entries.filter(e=>e.date>=wk && e.date<addDaysISO(wk,7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
-
-        const tw = weekWorkoutPts(thisWeekKey);
-        const lw = weekWorkoutPts(lastWeekKey);
-        const pw = weekWorkoutPts(prevWeekKey);
-
-        // month compare (workout points)
-        const thisMonth = monthKey(todayISO());
-        const d0 = new Date(thisMonth+"-01T00:00:00");
-        const lastMonthDate = new Date(d0); lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
-        const lastMonth = lastMonthDate.toISOString().slice(0,7);
-
-        const monthWorkoutPts = (mk)=> entries.filter(e=>(e.date||"").slice(0,7)===mk).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
-
-        const tm = monthWorkoutPts(thisMonth);
-        const lm = monthWorkoutPts(lastMonth);
-
-        // weekend compare (workout points) - Sat+Sun blocks by Saturday date
-        function weekendKeyFromDate(dateISO){
-          const d=new Date(dateISO+"T00:00:00");
-          const g=d.getDay(); // 0 Sun .. 6 Sat
-          const sat = new Date(d);
-          sat.setDate(sat.getDate() + (6-g)); // move to Sat of that week
-          sat.setHours(0,0,0,0);
-          return sat.toISOString().slice(0,10); // Saturday
-        }
-        const weekendPtsByKey={};
-        (entries||[]).forEach(e=>{
-          const dk=(e.date||"").slice(0,10);
-          if(!dk) return;
-          const wd= new Date(dk+"T00:00:00").getDay();
-          if(wd!==6 && wd!==0) return; // Sat or Sun
-          const wk=weekendKeyFromDate(dk);
-          weekendPtsByKey[wk]=(weekendPtsByKey[wk]||0)+minutesToPoints(Number(e.duration)||0);
-        });
-        const weekendKeys = Object.keys(weekendPtsByKey).sort().reverse();
-        const w0 = weekendKeys[0] ? weekendPtsByKey[weekendKeys[0]] : 0;
-        const w1 = weekendKeys[1] ? weekendPtsByKey[weekendKeys[1]] : 0;
-
-        // records (workout points)
-        const byWeek={};
-        (entries||[]).forEach(e=>{
-          const wk=weekStartISO((e.date||"").slice(0,10));
-          byWeek[wk]=(byWeek[wk]||0)+minutesToPoints(Number(e.duration)||0);
-        });
-        let bestWeek={k:null,v:0};
-        Object.entries(byWeek).forEach(([k,v])=>{ if(v>bestWeek.v){ bestWeek={k,v}; } });
-
-        return `
-          <div class="list-row"><div style="flex:1;">🏋️ Workout points — this week</div><div class="badge-num">${tw}</div></div>
-          <div class="list-row"><div style="flex:1;">Last week</div><div class="badge-num">${lw}</div></div>
-          <div class="list-row"><div style="flex:1;">Week before</div><div class="badge-num">${pw}</div></div>
-          <div class="list-row"><div style="flex:1;">Weekend (most recent)</div><div class="badge-num">${w0}</div></div>
-          <div class="list-row"><div style="flex:1;">Weekend before</div><div class="badge-num">${w1}</div></div>
-          <div class="list-row"><div style="flex:1;">This month</div><div class="badge-num">${tm}</div></div>
-          <div class="list-row"><div style="flex:1;">Last month</div><div class="badge-num">${lm}</div></div>
-          <div class="list-row"><div style="flex:1;">🏆 Record to beat (best workout week)</div><div class="badge-num">${bestWeek.v}${bestWeek.k?` <span class="small" style="opacity:.8;">(${bestWeek.k})</span>`:""}</div></div>
-        `;
-      })()}
+      <div class="section-title">
+        <h2 style="margin:0;">Compare</h2>
+        <label class="small">Weekly goal <input class="input" id="goalInput" value="${goal}" inputmode="numeric" style="max-width:110px;margin:8px 0 0 0;"></label>
+      </div>
+      ${compareHtml}
     </div>
 
-
     <div class="card">
-      <h2>➕ Add Workout</h2>
-
+      <h2>Add Workout</h2>
+      <div class="small">Quick presets for the sessions you log most on your phone.</div>
+      <div class="quick-grid" style="margin:12px 0 14px 0;">
+        ${WORKOUT_PRESETS.map((preset, idx)=>`<button class="btn soft" type="button" data-preset="${idx}">${preset.label}</button>`).join("")}
+      </div>
       <label class="input-label">Date</label>
       <input class="input" id="wDate" type="date" value="${todayISO()}"/>
-
       <label class="input-label">Category</label>
       <select class="input" id="wCatSelect">
         <option value="Steps">Steps</option>
@@ -1353,55 +2095,112 @@ function renderWorkout(){
         <option value="Running">Running</option>
         <option value="Strength">Strength</option>
         <option value="Circuit">Circuit</option>
-        <option value="Yoga">Yoga</option>        <option value="Walk">Walk</option>        <option value="Other">Other…</option>
+        <option value="Yoga">Yoga</option>
+        <option value="Walk">Walk</option>
+        <option value="Other">Other...</option>
       </select>
-
       <div id="wCatOtherWrap" class="hidden">
         <label class="input-label">Custom category</label>
         <input class="input" id="wCatOther" placeholder="Type your category"/>
       </div>
-
       <div id="wStepsWrap" class="hidden">
         <label class="input-label">Steps</label>
         <input class="input" id="wSteps" inputmode="numeric" placeholder="e.g., 15000"/>
       </div>
-
-<label class="input-label">Duration (min)</label>
-      <input class="input" id="wDur" inputmode="numeric"/>
-
-      <label class="input-label">Distance km</label>
-      <input class="input" id="wKm" inputmode="decimal"/>
-
-      <label class="input-label">Distance miles</label>
-      <input class="input" id="wMiles" inputmode="decimal"/>
-
-      <label class="input-label">Floors climbed</label>
-      <input class="input" id="wFloors" inputmode="numeric"/>
-
-      <label class="input-label">KB Swings</label>
-      <input class="input" id="wSwings" inputmode="numeric"/>
-
-      <label class="input-label">Plank sec</label>
-      <input class="input" id="wPlank" inputmode="numeric"/>
-
-      <label class="input-label">Push-ups</label>
-      <input class="input" id="wPushups" inputmode="numeric"/>
-
-      <label class="input-label">Total reps</label>
-      <input class="input" id="wReps" inputmode="numeric"/>
-
-      <label class="input-label">Circuit exercises</label>
-      <input class="input" id="wCircuitEx" inputmode="numeric"/>
-
+      <div class="mini-grid">
+        <label class="small">Duration (min)<input class="input" id="wDur" inputmode="numeric"/></label>
+        <label class="small">Distance km<input class="input" id="wKm" inputmode="decimal"/></label>
+        <label class="small">Distance miles<input class="input" id="wMiles" inputmode="decimal"/></label>
+        <label class="small">Floors climbed<input class="input" id="wFloors" inputmode="numeric"/></label>
+        <label class="small">KB Swings<input class="input" id="wSwings" inputmode="numeric"/></label>
+        <label class="small">Plank sec<input class="input" id="wPlank" inputmode="numeric"/></label>
+        <label class="small">Push-ups<input class="input" id="wPushups" inputmode="numeric"/></label>
+        <label class="small">Total reps<input class="input" id="wReps" inputmode="numeric"/></label>
+        <label class="small">Circuit exercises<input class="input" id="wCircuitEx" inputmode="numeric"/></label>
+      </div>
       <label class="input-label">Notes</label>
       <textarea class="input" id="wNotes"></textarea>
-
-      <button class="btn" id="addWorkoutBtn">Add Workout</button>
+      <div class="fab-row">
+        <button class="btn primary" id="addWorkoutBtn">Add Workout</button>
+        <button class="btn soft" id="saveTemplateBtn">Save as template</button>
+      </div>
     </div>
-    
-    ${sectionChallenges("🗓 Monthly Challenges", monthList,"resetMonthlyBtn")}
-    ${sectionChallenges("📅 Weekly Challenges", weekList,"resetWeeklyChalBtn")}
-    ${sectionChallenges("⚡ Weekend Warrior", weekendList,"resetWeekendBtn")}
+
+    ${sectionChallenges("Monthly Challenges", monthList,"resetMonthlyBtn")}
+    ${sectionChallenges("Weekly Challenges", weekList,"resetWeeklyChalBtn")}
+    ${sectionChallenges("Weekend Warrior", weekendList,"resetWeekendBtn")}
+
+    <div class="card">
+      <h2>Custom Challenge</h2>
+      ${activeChallenge ? `
+        <div class="row-between">
+          <div style="font-weight:600;">${escapeHtml(activeChallenge.name || "Custom challenge")}</div>
+          <div class="badge-num">${activeChallengeProgress.value}/${activeChallengeProgress.target}</div>
+        </div>
+        <div class="small">${escapeHtml(activeChallengeProgress.label)}</div>
+        <div class="progress-bg"><div class="progress-fg" style="width:${activeChallengeProgress.pct}%;"></div></div>
+        <div class="btn-row"><button class="btn danger" id="clearActiveChallengeBtn">Clear active</button></div>
+      ` : '<div class="small">No active custom challenge yet.</div>'}
+      <div class="mini-grid" style="margin-top:12px;">
+        <label class="small">Name<input class="input" id="customChallengeName" placeholder="Spring streak"></label>
+        <label class="small">Metric<select class="input" id="customChallengeMetric">${Object.entries(CHALLENGE_METRICS).map(([key, meta])=>`<option value="${key}">${escapeHtml(meta.label)}</option>`).join("")}</select></label>
+        <label class="small">Target<input class="input" id="customChallengeTarget" inputmode="numeric" placeholder="5"></label>
+      </div>
+      <div class="btn-row"><button class="btn" id="saveCustomChallengeBtn">Save challenge</button></div>
+      ${customChallenges.length ? `
+        <div style="margin-top:10px;">
+          ${customChallenges.map(ch=>{
+            const prog = getChallengeProgress(ch);
+            const isActive = ch.id === activeChallengeId;
+            return `<div class="list-row soft">
+              <div style="flex:1;">
+                <div style="font-weight:600;">${escapeHtml(ch.name || "Challenge")}${isActive ? ' <span class="badge-num">Active</span>' : ""}</div>
+                <div class="small">${escapeHtml(prog.label)} - ${prog.value}/${prog.target}</div>
+              </div>
+              <div class="btn-row" style="margin-top:0;">
+                <button class="btn soft" type="button" data-activate-challenge="${ch.id}">Use</button>
+                <button class="btn danger" type="button" data-del-challenge="${ch.id}">Delete</button>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      ` : ""}
+    </div>
+
+    <div class="card">
+      <h2>Templates</h2>
+      <div class="small">Save your common sessions and reuse them with one tap.</div>
+      ${workoutTemplates.length ? `
+        <div class="quick-grid" style="margin-top:12px;">
+          ${workoutTemplates.map((tpl, idx)=>`<button class="btn soft" type="button" data-template="${idx}">${escapeHtml(tpl.name || ("Template " + (idx+1)))}</button>`).join("")}
+        </div>
+        <div style="margin-top:10px;">
+          ${workoutTemplates.map((tpl, idx)=>`<div class="list-row soft"><div style="flex:1;">${escapeHtml(tpl.name || ("Template " + (idx+1)))}</div><button class="btn danger" type="button" data-del-template="${idx}">Delete</button></div>`).join("")}
+        </div>
+      ` : '<div class="small" style="margin-top:10px;">No custom templates yet.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Challenge Ideas</h2>
+      <div class="small">A few stronger challenge directions for this version of the app.</div>
+      ${challengeIdeas.map(item=>`<div class="list-row soft"><div style="flex:1;">${item}</div></div>`).join("")}
+    </div>
+
+    <div class="card">
+      <h2>Workout Records</h2>
+      <div class="record-grid">
+        <div class="record-card">
+          <div class="small">Longest workout</div>
+          <div class="record-value">${records.longestWorkout.value || 0} min</div>
+          <div class="small">${escapeHtml(records.longestWorkout.label || "No workout yet")}</div>
+        </div>
+        <div class="record-card">
+          <div class="small">Most steps</div>
+          <div class="record-value">${records.mostSteps.value || 0}</div>
+          <div class="small">${records.mostSteps.date || "No step record yet"}</div>
+        </div>
+      </div>
+    </div>
 
     <div class="card">
       <h2>Your Workouts <span class="small">(last 30 days)</span></h2>
@@ -1409,43 +2208,31 @@ function renderWorkout(){
         recentEntries.length===0
         ? '<div class="small">No workouts in the past 30 days.</div>'
         : recentEntries.map(e=>`
-          <div class="list-row">
+          <div class="list-row soft">
             <div style="flex:1;">
-              <div style="font-weight:600;">${e.date} • ${e.category||""} <span class="badge-num" style="margin-left:8px;">${minutesToPoints(Number(e.duration)||0)} pts</span></div>
-              <div class="small">
-                ${e.duration?`⏱ ${e.duration} min `:""}
-                ${e.km?`📏 ${e.km} km `:""}
-                ${e.miles?`🛣 ${e.miles} mi `:""}
-                ${e.floors?`🧗 ${e.floors} floors `:""}
-                ${e.swings?`💪 ${e.swings} swings `:""}
-                ${e.plank?`🧘 ${e.plank} sec plank `:""}
-                ${e.pushups?`🧱 ${e.pushups} push-ups `:""}
-                ${e.reps?`🔁 ${e.reps} reps `:""}${e.circuitEx?`🧩 ${e.circuitEx} circuit ex `:""} ${calcStrengthDensity(e)?`⚡ ${calcStrengthDensity(e)} reps/min`:""}
-              </div>
-              ${e.notes?`<div class="small">${e.notes}</div>`:""}
+              <div style="font-weight:600;">${e.date} - ${e.category||""} <span class="badge-num" style="margin-left:8px;">${minutesToPoints(Number(e.duration)||0)} pts</span></div>
+              <div class="small">${e.duration?`${e.duration} min `:""}${e.km?`${e.km} km `:""}${e.miles?`${e.miles} mi `:""}${e.floors?`${e.floors} floors `:""}${e.swings?`${e.swings} swings `:""}${e.plank?`${e.plank} sec plank `:""}${e.pushups?`${e.pushups} push-ups `:""}${e.reps?`${e.reps} reps `:""}${e.circuitEx?`${e.circuitEx} circuit ex `:""}${calcStrengthDensity(e)?`Intensity ${calcStrengthDensity(e)} reps/min`:""}</div>
+              ${e.notes?`<div class="small">${escapeHtml(e.notes)}</div>`:""}
             </div>
-            <div class="del" data-del-workout="${e.id}">🗑️</div>
+            <div class="del" data-del-workout="${e.id}">Delete</div>
           </div>
         `).join("")
       }
     </div>
 
-<div class="card">
-  <h2>🧾 Backup / Restore</h2>
-  <div class="small">If you open Momentum from a different file name/path, your browser may treat it as a new app and your saved data won’t show. Export from the old file, then import here.</div>
-
-  <div class="btn-row">
-    <button class="btn" id="exportDataBtn">Export data</button>
-    <button class="btn" id="downloadDataBtn">Download JSON</button>
-    <button class="btn" id="copyDataBtn">Copy</button>
-  </div>
-
-  <textarea class="input" id="backupText" placeholder="Export will appear here… or paste backup JSON to import"></textarea>
-
-  <div class="btn-row">
-    <button class="btn" id="importDataBtn">Import (paste JSON above)</button>
-  </div>
-</div>
+    <div class="card">
+      <h2>Backup / Restore</h2>
+      <div class="small">If you open Momentum from a different file name/path, your browser may treat it as a new app and your saved data won't show. Export from the old file, then import here.</div>
+      <div class="btn-row">
+        <button class="btn" id="exportDataBtn">Export data</button>
+        <button class="btn" id="downloadDataBtn">Download JSON</button>
+        <button class="btn" id="copyDataBtn">Copy</button>
+      </div>
+      <textarea class="input" id="backupText" placeholder="Export will appear here... or paste backup JSON to import"></textarea>
+      <div class="btn-row">
+        <button class="btn" id="importDataBtn">Import (paste JSON above)</button>
+      </div>
+    </div>
   `;
 
   const catSel = wrap.querySelector("#wCatSelect");
@@ -1459,7 +2246,6 @@ function renderWorkout(){
         catOtherWrap.classList.add("hidden");
         const other=wrap.querySelector("#wCatOther"); if(other) other.value="";
       }
-      // show steps input only when "Steps" is selected
       if(stepsWrap){
         if(catSel.value==="Steps") stepsWrap.classList.remove("hidden");
         else {
@@ -1470,6 +2256,112 @@ function renderWorkout(){
     };
     catSel.onchange();
   }
+
+  wrap.querySelectorAll("[data-preset]").forEach(btn=>{
+    btn.onclick=()=>{
+      const preset = WORKOUT_PRESETS[Number(btn.getAttribute("data-preset"))];
+      if(!preset) return;
+      wrap.querySelector("#wDate").value = todayISO();
+      if(catSel){
+        catSel.value = preset.category;
+        catSel.onchange();
+      }
+      if(wrap.querySelector("#wSteps")) wrap.querySelector("#wSteps").value = preset.steps || "";
+      wrap.querySelector("#wDur").value = preset.duration || "";
+      wrap.querySelector("#wKm").value = preset.km || "";
+      wrap.querySelector("#wMiles").value = preset.miles || "";
+      wrap.querySelector("#wFloors").value = preset.floors || "";
+      wrap.querySelector("#wSwings").value = preset.swings || "";
+      wrap.querySelector("#wPlank").value = preset.plank || "";
+      wrap.querySelector("#wPushups").value = preset.pushups || "";
+      wrap.querySelector("#wReps").value = preset.reps || "";
+      wrap.querySelector("#wCircuitEx").value = preset.circuitEx || "";
+      wrap.querySelector("#wNotes").value = preset.notes || "";
+      showToast(`${preset.label} loaded`);
+    };
+  });
+
+  wrap.querySelectorAll("[data-template]").forEach(btn=>{
+    btn.onclick=()=>{
+      const tpl = workoutTemplates[Number(btn.getAttribute("data-template"))];
+      if(!tpl) return;
+      wrap.querySelector("#wDate").value = todayISO();
+      if(catSel){
+        catSel.value = tpl.category || "Strength";
+        catSel.onchange();
+      }
+      if(wrap.querySelector("#wSteps")) wrap.querySelector("#wSteps").value = tpl.steps || "";
+      wrap.querySelector("#wDur").value = tpl.duration || "";
+      wrap.querySelector("#wKm").value = tpl.km || "";
+      wrap.querySelector("#wMiles").value = tpl.miles || "";
+      wrap.querySelector("#wFloors").value = tpl.floors || "";
+      wrap.querySelector("#wSwings").value = tpl.swings || "";
+      wrap.querySelector("#wPlank").value = tpl.plank || "";
+      wrap.querySelector("#wPushups").value = tpl.pushups || "";
+      wrap.querySelector("#wReps").value = tpl.reps || "";
+      wrap.querySelector("#wCircuitEx").value = tpl.circuitEx || "";
+      wrap.querySelector("#wNotes").value = tpl.notes || "";
+      if(tpl.category === "Other" && wrap.querySelector("#wCatOther")) wrap.querySelector("#wCatOther").value = tpl.customCategory || "";
+      showToast(`${tpl.name || "Template"} loaded`);
+    };
+  });
+
+  wrap.querySelectorAll("[data-del-template]").forEach(btn=>{
+    btn.onclick=()=>{
+      const idx = Number(btn.getAttribute("data-del-template"));
+      workoutTemplates = workoutTemplates.filter((_, i)=>i!==idx);
+      persist();
+      showToast("Template removed");
+      renderWorkout();
+    };
+  });
+
+  if(wrap.querySelector("#clearActiveChallengeBtn")){
+    wrap.querySelector("#clearActiveChallengeBtn").onclick=()=>{
+      activeChallengeId = "";
+      persist();
+      showToast("Active challenge cleared");
+      renderWorkout();
+    };
+  }
+
+  wrap.querySelector("#saveCustomChallengeBtn").onclick=()=>{
+    const name = (wrap.querySelector("#customChallengeName").value||"").trim();
+    const metric = wrap.querySelector("#customChallengeMetric").value || "workout_points_week";
+    const target = Number(wrap.querySelector("#customChallengeTarget").value)||0;
+    if(!name || !target){
+      showToast("Add a name and target");
+      return;
+    }
+    const challenge = {id:uid(), name, metric, target};
+    customChallenges = [challenge, ...customChallenges].slice(0, 12);
+    activeChallengeId = challenge.id;
+    maybeCompleteCustomChallenge();
+    persist();
+    showToast("Challenge saved");
+    renderWorkout();
+  };
+
+  wrap.querySelectorAll("[data-activate-challenge]").forEach(btn=>{
+    btn.onclick=()=>{
+      activeChallengeId = btn.getAttribute("data-activate-challenge") || "";
+      maybeCompleteCustomChallenge();
+      persist();
+      showToast("Challenge activated");
+      renderWorkout();
+    };
+  });
+
+  wrap.querySelectorAll("[data-del-challenge]").forEach(btn=>{
+    btn.onclick=()=>{
+      const id = btn.getAttribute("data-del-challenge") || "";
+      customChallenges = customChallenges.filter(ch=>ch.id!==id);
+      if(activeChallengeId === id) activeChallengeId = "";
+      persist();
+      showToast("Challenge removed");
+      renderWorkout();
+    };
+  });
 
   wrap.querySelector("#goalInput").onchange=(ev)=>{
     goal = Number(ev.target.value)||0;
@@ -1482,14 +2374,13 @@ function renderWorkout(){
     const rec={
       id:uid(),
       date:wrap.querySelector("#wDate").value.trim(),
-      category:(function(){
-      const sel=wrap.querySelector("#wCatSelect");
-      const val=(sel?sel.value:"").trim();
-      if(val==="Other"){
-        return (wrap.querySelector("#wCatOther")?.value||"").trim();
-      }
-      localStorage.last_cat = val; return val;
-    })(),
+      category:(()=>{
+        const sel=wrap.querySelector("#wCatSelect");
+        const val=(sel?sel.value:"").trim();
+        if(val==="Other") return (wrap.querySelector("#wCatOther")?.value||"").trim();
+        localStorage.last_cat = val;
+        return val;
+      })(),
       steps:(wrap.querySelector("#wSteps")?.value||"").trim(),
       duration:wrap.querySelector("#wDur").value.trim(),
       km:wrap.querySelector("#wKm").value.trim(),
@@ -1502,54 +2393,43 @@ function renderWorkout(){
       circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
       notes:wrap.querySelector("#wNotes").value.trim()
     };
-    entries=[rec,...entries];
+    addWorkoutRecord(rec);
+    renderWorkout();
+  };
 
-    const kmVal = (parseFloat(rec.km)||0) + (parseFloat(rec.miles)||0)*1.60934;
-    const floorsVal = parseFloat(rec.floors)||0;
-    const swingsVal = parseFloat(rec.swings)||0;
-    const repsVal = parseFloat(rec.reps)||0;
-    const plankVal = parseFloat(rec.plank)||0;
-    const circuitExVal = parseFloat(rec.circuitEx)||0;
-    const pushupsVal = parseFloat(rec.pushups)||0;
-    const stepsVal = parseFloat(rec.steps)||0;
-    const cat = (rec.category||"").toLowerCase();
-    const isYoga = cat.match(/yoga|stretch/);
-    const isStrength = cat.match(/strength|kettlebell|kb|push/);
-    const isCardio = cat.match(/cardio|row|cycle|running|bike|stair|stairs|climb/);
-
-    // monthly
-    monthlyProg.swings = (monthlyProg.swings||0)+swingsVal;
-    monthlyProg.cyclingKm = (monthlyProg.cyclingKm||0)+(/cycle|bike|cycling/.test(cat)?kmVal:0);
-    monthlyProg.walkKm = (monthlyProg.walkKm||0)+(/walk/.test(cat)?kmVal:0);
-    if(isYoga){ /* monthly yoga per-day counting */
-    monthlyProg.pushups=(monthlyProg.pushups||0)+pushupsVal; }
-
-    // weekly
-    if(isStrength){ /* per-day counting */ }
-    if(isCardio){ /* per-day counting */ }
-    weeklyProg.floors = (weeklyProg.floors||0)+floorsVal;
-    weeklyProg.distanceKm = (weeklyProg.distanceKm||0)+(/running|row|cycle|bike|cycling/.test(cat)?kmVal:0);
-    weeklyProg.steps = (weeklyProg.steps||0)+stepsVal;
-
-    // weekend
-    weekendProg.swings=(weekendProg.swings||0)+swingsVal;
-    weekendProg.distanceKm=(weekendProg.distanceKm||0)+kmVal;
-    weekendProg.circuitEx=(weekendProg.circuitEx||0)+circuitExVal;
-    if(isYoga){ /* weekend yoga per-day counting */ }
-
-
-    recomputeSessionCounters();
+  wrap.querySelector("#saveTemplateBtn").onclick=()=>{
+    const category = wrap.querySelector("#wCatSelect").value || "Strength";
+    const customCategory = (wrap.querySelector("#wCatOther")?.value || "").trim();
+    const baseName = category === "Other" ? (customCategory || "Custom workout") : category;
+    const template = {
+      name:`${baseName} template`,
+      category,
+      customCategory,
+      steps:(wrap.querySelector("#wSteps")?.value||"").trim(),
+      duration:wrap.querySelector("#wDur").value.trim(),
+      km:wrap.querySelector("#wKm").value.trim(),
+      miles:wrap.querySelector("#wMiles").value.trim(),
+      floors:wrap.querySelector("#wFloors").value.trim(),
+      swings:wrap.querySelector("#wSwings").value.trim(),
+      plank:wrap.querySelector("#wPlank").value.trim(),
+      pushups:wrap.querySelector("#wPushups").value.trim(),
+      reps:wrap.querySelector("#wReps").value.trim(),
+      circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
+      notes:wrap.querySelector("#wNotes").value.trim()
+    };
+    workoutTemplates = [template, ...workoutTemplates].slice(0, 12);
     persist();
-    showToast(compliment());
-    if((monthlyProg.swings||0)>=1000) maybeUnlock("kb_1k_swings_month","1,000 KB swings (month)");
+    showToast("Template saved");
     renderWorkout();
   };
 
   wrap.querySelectorAll("[data-del-workout]").forEach(btn=>{
     btn.onclick=()=>{
-      const id=btn.getAttribute("data-del-workout");
+      const id = btn.getAttribute("data-del-workout") || "";
       entries=entries.filter(x=>x.id!==id);
+      rebuildDerivedProgress();
       persist();
+      showToast("Workout removed");
       renderWorkout();
     };
   });
@@ -1558,213 +2438,280 @@ function renderWorkout(){
   wrap.querySelector("#resetWeeklyChalBtn").onclick=()=>{ resetWeeklyChal(); };
   wrap.querySelector("#resetWeekendBtn").onclick=()=>{ resetWeekend(); };
 
-// Backup / Restore handlers
-const backupText = wrap.querySelector("#backupText");
-const exportBtn = wrap.querySelector("#exportDataBtn");
-const downloadBtn = wrap.querySelector("#downloadDataBtn");
-const copyBtn = wrap.querySelector("#copyDataBtn");
-const importBtn = wrap.querySelector("#importDataBtn");
+  const backupText = wrap.querySelector("#backupText");
+  const exportBtn = wrap.querySelector("#exportDataBtn");
+  const downloadBtn = wrap.querySelector("#downloadDataBtn");
+  const copyBtn = wrap.querySelector("#copyDataBtn");
+  const importBtn = wrap.querySelector("#importDataBtn");
 
-if(exportBtn && backupText){
-  exportBtn.onclick=()=>{
-    backupText.value = exportMomentumData();
-    showToast("Backup generated");
-  };
-}
-if(downloadBtn && backupText){
-  downloadBtn.onclick=()=>{
-    const txt = backupText.value && backupText.value.trim() ? backupText.value : exportMomentumData();
-    if(backupText) backupText.value = txt;
-    downloadTextFile(`momentum_backup_${todayISO()}.json`, txt, "application/json;charset=utf-8;");
-    showToast("Downloaded");
-  };
-}
-if(copyBtn && backupText){
-  copyBtn.onclick=async ()=>{
-    const txt = backupText.value || "";
-    if(!txt.trim()){ showToast("Nothing to copy"); return; }
-    try{
-      await navigator.clipboard.writeText(txt);
-      showToast("Copied");
-    }catch(e){
-      // fallback
-      backupText.focus(); backupText.select();
-      document.execCommand("copy");
-      showToast("Copied");
-    }
-  };
-}
-if(importBtn && backupText){
-  importBtn.onclick=()=>{
-    const txt = (backupText.value||"").trim();
-    if(!txt){ showToast("Paste backup JSON first"); return; }
-    const ok = importMomentumDataFromText(txt);
-    if(!ok){ showToast("Invalid JSON"); return; }
-    showToast("Imported — reloading…");
-    setTimeout(()=>location.reload(), 300);
-  };
-}
+  if(exportBtn && backupText){
+    exportBtn.onclick=()=>{
+      backupText.value = exportMomentumData();
+      lastBackupExport = {date: todayISO(), text: backupText.value};
+      persist();
+      showToast("Backup generated");
+    };
+  }
+  if(downloadBtn && backupText){
+    downloadBtn.onclick=()=>{
+      const txt = backupText.value && backupText.value.trim() ? backupText.value : exportMomentumData();
+      if(backupText) backupText.value = txt;
+      lastBackupExport = {date: todayISO(), text: txt};
+      persist();
+      downloadTextFile(`momentum_backup_${todayISO()}.json`, txt, "application/json;charset=utf-8;");
+      showToast("Downloaded");
+    };
+  }
+  if(copyBtn && backupText){
+    copyBtn.onclick=async ()=>{
+      const txt = backupText.value || "";
+      if(!txt.trim()){ showToast("Nothing to copy"); return; }
+      try{
+        await navigator.clipboard.writeText(txt);
+        showToast("Copied");
+      }catch(e){
+        backupText.focus(); backupText.select();
+        document.execCommand("copy");
+        showToast("Copied");
+      }
+    };
+  }
+  if(importBtn && backupText){
+    importBtn.onclick=()=>{
+      const txt = (backupText.value||"").trim();
+      if(!txt){ showToast("Paste backup JSON first"); return; }
+      const ok = importMomentumDataFromText(txt);
+      if(!ok){ showToast("Invalid JSON"); return; }
+      showToast("Imported - reloading...");
+      setTimeout(()=>location.reload(), 300);
+    };
+  }
 }
 
-// MOTIVATION (segmented + less scroll)
-
-function renderMotivation(){
-  const wrap=document.getElementById("screen-motivation");
+function renderHistory(){
+  const wrap=document.getElementById("screen-history");
   if(!wrap) return;
 
-  const recentCheckins  = (checkins||[]).slice(0,8);
-  const recentGrat      = (gratitudeLog||[]).slice(0,8);
-  const recentJournal   = (journalLog||[]).slice(0,6);
-  const recentRef       = (reflections||[]).slice(0,6);
+  const historyMode = window._historyMode || "all";
+  const days = [];
+  for(let i=0;i<28;i++){
+    const day = addDaysISO(todayISO(), -i);
+    const dayWorkouts = entries.filter(e=>(e.date||"").slice(0,10)===day);
+    const dayHealth = bpLog.filter(e=>(e.date||"").slice(0,10)===day).length + hLog.filter(e=>(e.date||"").slice(0,10)===day).length;
+    const dayMotivation = checkins.filter(e=>(e.date||"").slice(0,10)===day).length + gratitudeLog.filter(e=>(e.date||"").slice(0,10)===day).length + journalLog.filter(e=>(e.date||"").slice(0,10)===day).length;
+    const habitCount = habitDefs.reduce((s,h)=>s+(lwDays?.[day]?.[h.key]?1:0),0);
+    const totalPoints = dayWorkouts.reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0) + dayHealth + dayMotivation;
+    days.push({
+      day,
+      workoutCount: dayWorkouts.length,
+      habitCount,
+      healthCount: dayHealth,
+      totalPoints,
+      hasAny: dayWorkouts.length || habitCount || dayHealth || dayMotivation
+    });
+  }
+
+  const filteredDays = days.filter(d=>{
+    if(historyMode==="active") return d.hasAny;
+    if(historyMode==="workouts") return d.workoutCount>0;
+    return true;
+  });
+  let currentStreak = 0;
+  for(const day of days){
+    if(!day.hasAny) break;
+    currentStreak += 1;
+  }
+  let longestStreak = 0;
+  let running = 0;
+  days.forEach(day=>{
+    if(day.hasAny){
+      running += 1;
+      longestStreak = Math.max(longestStreak, running);
+    } else {
+      running = 0;
+    }
+  });
+  const totalWorkoutPoints = days.reduce((s,d)=>s+d.totalPoints,0);
+  const activeDays = days.filter(d=>d.hasAny).length;
+  const recentBadges = achievements.filter(a=>a.type==="challenge_badge").slice(0,8);
+  const recentWorkouts = entries.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,12);
+  const records = computeRecords();
 
   wrap.innerHTML=`
-    <div class="card" style="border:2px solid rgba(255,255,255,.15)">
-      <h2>🗺️ Weekly Mantra</h2>
-      <div class="small" style="opacity:.8;margin-bottom:6px;">This week’s focus</div>
-      <div style="font-size:1.1em;margin-bottom:10px;">
-        ${weeklyMantra ? escapeHtml(weeklyMantra) : "<span style='opacity:.6'>No mantra set yet</span>"}
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">History & Trends</div>
+          <h2 class="hero-title">Your streaks and records</h2>
+          <div class="small hero-sub">See how the last month is stacking up and where your best efforts happened.</div>
+        </div>
+        <div class="score-pill">
+          <div class="small">Active days</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${activeDays}</div>
+        </div>
       </div>
-      <input class="input" id="mantraInput" value="${escapeAttr(weeklyMantra||"")}" placeholder="Set your mantra for this week"/>
-      <button class="btn primary" id="saveMantraBtn">Save Mantra</button>
-    </div>
-      <input class="input" id="checkWin" placeholder="One-line win"/>
-      <button class="btn primary" id="saveCheckinBtn">Save</button>
-      ${recentCheckins.map(c=>`
-        <div class="list-row">
-          <div style="flex:1">
-            <div class="small">${escapeHtml(c.date)}</div>
-            <div>${escapeHtml(c.win)}</div>
-          </div>
-          <button class="btn danger" data-del-check="${c.id}">🗑️</button>
-        </div>`).join("")}
+      <div class="quick-grid" style="margin-top:14px;">
+        <div class="stat-chip"><div class="row-between"><div>Longest streak</div><div class="badge-num">${longestStreak}</div></div><div class="small">Days with any activity</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Current streak</div><div class="badge-num">${currentStreak}</div></div><div class="small">Including today</div></div>
+        <div class="stat-chip"><div class="row-between"><div>28-day points</div><div class="badge-num">${totalWorkoutPoints}</div></div><div class="small">Workout, habits, health, notes</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Best week</div><div class="badge-num">${records.bestWeek.value || 0}</div></div><div class="small">${records.bestWeek.label || "No record yet"}</div></div>
+      </div>
     </div>
 
     <div class="card">
-      <h2>🙏 Gratitude</h2>
-      <input class="input" id="gratText"/>
-      <button class="btn primary" id="saveGratBtn">Save</button>
-      ${recentGrat.map(g=>`
-        <div class="list-row">
-          <div style="flex:1">
-            <div class="small">${escapeHtml(g.date)}</div>
-            <div>${escapeHtml(g.text)}</div>
-          </div>
-          <button class="btn danger" data-del-grat="${g.id}">🗑️</button>
-        </div>`).join("")}
+      <h2>Records</h2>
+      <div class="record-grid">
+        <div class="record-card">
+          <div class="small">Longest workout</div>
+          <div class="record-value">${records.longestWorkout.value || 0} min</div>
+          <div class="small">${escapeHtml(records.longestWorkout.label || "No workout yet")} ${records.longestWorkout.date ? `- ${records.longestWorkout.date}` : ""}</div>
+        </div>
+        <div class="record-card">
+          <div class="small">Most steps</div>
+          <div class="record-value">${records.mostSteps.value || 0}</div>
+          <div class="small">${records.mostSteps.date || "No step record yet"}</div>
+        </div>
+        <div class="record-card">
+          <div class="small">Best week</div>
+          <div class="record-value">${records.bestWeek.value || 0}</div>
+          <div class="small">${records.bestWeek.label || "No weekly record yet"}</div>
+        </div>
+        <div class="record-card">
+          <div class="small">Best month</div>
+          <div class="record-value">${records.bestMonth.value || 0}</div>
+          <div class="small">${records.bestMonth.label || "No monthly record yet"}</div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
-      <h2>📝 Journal</h2>
-      <textarea class="input" id="journalText"></textarea>
-      <button class="btn primary" id="saveJournalBtn">Save</button>
-      ${recentJournal.map(j=>`
-        <div class="list-row">
-          <div style="flex:1">
-            <div class="small">${escapeHtml(j.date)}</div>
-            <div>${escapeHtml(j.text)}</div>
-          </div>
-          <button class="btn danger" data-del-journal="${j.id}">🗑️</button>
-        </div>`).join("")}
+      <h2>History</h2>
+      <div class="small">Your last 28 days at a glance.</div>
+      <div class="segmented" style="margin-top:12px;">
+        <button class="btn ${historyMode==="all"?"soft":""}" data-history-mode="all">All days</button>
+        <button class="btn ${historyMode==="active"?"soft":""}" data-history-mode="active">Active only</button>
+        <button class="btn ${historyMode==="workouts"?"soft":""}" data-history-mode="workouts">Workouts</button>
+      </div>
     </div>
 
     <div class="card">
-      <h2>🪞 Weekly Reflection</h2>
-      <textarea class="input" id="refText"></textarea>
-      <button class="btn primary" id="saveRefBtn">Save</button>
-      ${recentRef.map(r=>`
-        <div class="list-row">
-          <div style="flex:1">
-            <div class="small">${escapeHtml(r.week||r.date)}</div>
-            <div>${escapeHtml(r.text)}</div>
+      <h2>Daily Rollup</h2>
+      ${filteredDays.slice(0,10).map(day=>`
+        <div class="list-row soft">
+          <div style="flex:1;">
+            <div style="font-weight:600;">${day.day}</div>
+            <div class="small">${day.workoutCount} workouts - ${day.habitCount} habits - ${day.healthCount} health logs</div>
           </div>
-          <button class="btn danger" data-del-ref="${r.id}">🗑️</button>
-        </div>`).join("")}
+          <div class="badge-num">${day.totalPoints}</div>
+        </div>
+      `).join("") || '<div class="small">No days match this filter yet.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Recent Workouts</h2>
+      ${recentWorkouts.length ? recentWorkouts.map(e=>`
+        <div class="list-row soft">
+          <div style="flex:1;">
+            <div style="font-weight:600;">${escapeHtml((e.category||"Workout"))} - ${escapeHtml(e.date||"")}</div>
+            <div class="small">${e.duration?`${escapeHtml(e.duration)} min - `:""}${e.km?`${escapeHtml(e.km)} km - `:""}${e.steps?`${escapeHtml(e.steps)} steps`:""}</div>
+          </div>
+          <div class="badge-num">${minutesToPoints(Number(e.duration)||0)}</div>
+        </div>
+      `).join("") : '<div class="small">No workouts logged yet.</div>'}
+    </div>
+
+    <div class="card">
+      <h2>Challenge Badges</h2>
+      ${recentBadges.length ? recentBadges.map(b=>`
+        <div class="list-row soft">
+          <div style="flex:1;">
+            <div style="font-weight:600;">${escapeHtml(b.rewardName || "Badge")}</div>
+            <div class="small">${escapeHtml(b.badgeTier || "Bronze")} tier - ${escapeHtml(b.name || "Challenge")} - ${escapeHtml((b.completedAt||"").slice(0,10))}</div>
+          </div>
+        </div>
+      `).join("") : '<div class="small">Complete a custom challenge to earn a badge.</div>'}
     </div>
   `;
 
-  wrap.querySelector("#saveMantraBtn").onclick=()=>{
-    const v=(wrap.querySelector("#mantraInput")?.value||"").trim();
-    weeklyMantra=v;
-    persist();
-    showToast("Weekly mantra saved");
-    renderMotivation();
-  };
-
-  
-  let selectedEnergy="";
-  let selectedMood="";
-
-  wrap.querySelectorAll("[data-energy]").forEach(b=>{
-    b.onclick=()=>{
-      selectedEnergy=b.getAttribute("data-energy");
-      wrap.querySelectorAll("[data-energy]").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
+  wrap.querySelectorAll("[data-history-mode]").forEach(btn=>{
+    btn.onclick=()=>{
+      window._historyMode = btn.getAttribute("data-history-mode") || "all";
+      renderHistory();
     };
   });
-
-  wrap.querySelectorAll("[data-mood]").forEach(b=>{
-    b.onclick=()=>{
-      selectedMood=b.getAttribute("data-mood");
-      wrap.querySelectorAll("[data-mood]").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-    };
-  });
-
-  document.getElementById("saveCheckinBtn").onclick=()=>{
-    const win=checkWin.value.trim(); if(!win) return;
-    const energy = selectedEnergy || "";
-    const mood = selectedMood || "";
-    checkins=[{id:uid(),date:todayISO(),win,energy,mood,points:1},...checkins];
-    motLog=[{id:uid(),date:todayISO(),type:"checkin",points:1},...motLog];
-    persist(); renderMotivation();
-  };
-
-  document.getElementById("saveGratBtn").onclick=()=>{
-    if(!gratText.value.trim()) return;
-    gratitudeLog=[{id:uid(),date:todayISO(),text:gratText.value.trim(),points:1},...gratitudeLog];
-    motLog=[{id:uid(),date:todayISO(),type:"gratitude",points:1},...motLog];
-    persist(); renderMotivation();
-  };
-
-  document.getElementById("saveJournalBtn").onclick=()=>{
-    if(!journalText.value.trim()) return;
-    journalLog=[{id:uid(),date:todayISO(),text:journalText.value.trim(),points:1},...journalLog];
-    motLog=[{id:uid(),date:todayISO(),type:"journal",points:1},...motLog];
-    persist(); renderMotivation();
-  };
-
-  document.getElementById("saveRefBtn").onclick=()=>{
-    if(!refText.value.trim()) return;
-    reflections=[{id:uid(),week:mondayOfThisWeekISO(),text:refText.value.trim()},...reflections];
-    persist(); renderMotivation();
-  };
-
-  wrap.querySelectorAll("[data-del-check]").forEach(b=>b.onclick=()=>{checkins=checkins.filter(x=>x.id!==b.dataset.delCheck);persist();renderMotivation();});
-  wrap.querySelectorAll("[data-del-grat]").forEach(b=>b.onclick=()=>{gratitudeLog=gratitudeLog.filter(x=>x.id!==b.dataset.delGrat);persist();renderMotivation();});
-  wrap.querySelectorAll("[data-del-journal]").forEach(b=>b.onclick=()=>{journalLog=journalLog.filter(x=>x.id!==b.dataset.delJournal);persist();renderMotivation();});
-  wrap.querySelectorAll("[data-del-ref]").forEach(b=>b.onclick=()=>{reflections=reflections.filter(x=>x.id!==b.dataset.delRef);persist();renderMotivation();});
 }
+
+const screenRenderers = {
+  overview: renderOverview,
+  health: renderHealth,
+  lifestyle: renderLifestyle,
+  workout: renderWorkout,
+  history: renderHistory
+};
+
+const renderedScreens = Object.create(null);
+let activeScreen = "";
+
+function renderScreen(name, force=false){
+  const renderer = screenRenderers[name];
+  if(!renderer) return;
+  if(!force && renderedScreens[name]) return;
+  try{
+    renderer();
+    renderedScreens[name] = true;
+  }catch(err){
+    const target = document.getElementById('screen-'+name);
+    if(target){
+      target.innerHTML = `<div class="card"><h2>Screen Error</h2><div class="small">${escapeHtml(String(err && err.message ? err.message : err))}</div></div>`;
+    }
+    showToast("Screen error");
+    console.error(err);
+  }
+}
+
 function showScreen(name){
+  if(name===activeScreen) return;
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('screen-'+name).classList.remove('hidden');
   document.querySelector('.nav-btn[data-target="'+name+'"]').classList.add('active');
-
-  if(name==="overview") renderOverview();
-  if(name==="health") renderHealth();
-  if(name==="lifestyle"){ renderLifestyle(); }
-  if(name==="workout") renderWorkout();
-  if(name==="motivation") renderMotivation();
+  activeScreen = name;
+  if(name==="lifestyle"){
+    window._lifeSelected = todayISO();
+    renderScreen(name, true);
+    return;
+  }
+  if(name==="history"){
+    renderScreen(name, true);
+    return;
+  }
+  renderScreen(name);
 }
 document.querySelectorAll('.nav-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     showScreen(btn.getAttribute('data-target'));
   });
 });
-showScreen("overview");
+try{
+  showScreen("overview");
+  maybeSendReminder();
+}catch(err){
+  const target = document.getElementById('screen-overview');
+  if(target){
+    target.innerHTML = `<div class="card"><h2>Startup Error</h2><div class="small">${escapeHtml(String(err && err.message ? err.message : err))}</div></div>`;
+  }
+  console.error(err);
+}
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./service-worker.js');
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "hidden") flushPersist();
+  if(document.visibilityState === "visible") maybeSendReminder();
+});
+window.addEventListener("pagehide", flushPersist);
+window.addEventListener("beforeunload", flushPersist);
+
+if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)){
+  navigator.serviceWorker.register('./service-worker.js').catch((err)=>console.error(err));
 }
 </script>
 </body>
