@@ -472,6 +472,7 @@ textarea.input{
 <div id="screen-health" class="screen hidden"></div>
 <div id="screen-lifestyle" class="screen hidden"></div>
 <div id="screen-workout" class="screen hidden"></div>
+<div id="screen-75hard" class="screen hidden"></div>
 <div id="screen-history" class="screen hidden"></div>
 
 <nav class="nav">
@@ -479,6 +480,7 @@ textarea.input{
   <button class="nav-btn" data-target="health"><div class="nav-emoji">H</div>Health</button>
   <button class="nav-btn" data-target="lifestyle"><div class="nav-emoji">L</div>Lifestyle</button>
   <button class="nav-btn" data-target="workout"><div class="nav-emoji">W</div>Workout</button>
+  <button class="nav-btn" data-target="75hard"><div class="nav-emoji">MT</div>Mental Toughness</button>
   <button class="nav-btn" data-target="history"><div class="nav-emoji">R</div>History</button>
 </nav>
 
@@ -629,6 +631,76 @@ function defaultWorkoutTemplates(){
 
 function defaultCustomChallenges(){
   return [];
+}
+
+function default75HardState(){
+  return {startDate:"", notes:"", days:{}, tasks:defaultMentalToughnessTasks()};
+}
+
+function defaultMentalToughnessTasks(){
+  return [
+    {key:"workout1", label:"Movement session 1"},
+    {key:"workout2", label:"Movement session 2"},
+    {key:"outdoor", label:"Get outside for one session"},
+    {key:"water", label:"Hydration goal"},
+    {key:"diet", label:"Nutrition goal"},
+    {key:"reading", label:"Read 10 pages"},
+    {key:"photo", label:"Quick progress photo"},
+    {key:"clean", label:"Stay on plan"}
+  ];
+}
+
+function normalizeMentalToughnessTasks(list){
+  const base = Array.isArray(list) && list.length ? list : defaultMentalToughnessTasks();
+  return base.map((task, idx)=>({
+    key: String(task.key || ("mt_goal_" + idx)).replace(/[^a-z0-9_]+/gi,"_").toLowerCase(),
+    label: String(task.label || ("Goal " + (idx + 1))).trim()
+  })).filter(task=>task.label);
+}
+
+function hard75TaskDefs(){
+  return normalizeMentalToughnessTasks(hard75?.tasks);
+}
+
+function get75HardEntry(day){
+  return Object.assign({notes:""}, hard75?.days?.[day] || {});
+}
+
+function is75HardComplete(day){
+  const row = get75HardEntry(day);
+  return hard75TaskDefs().every(task=>!!row[task.key]);
+}
+
+function get75HardStats(){
+  const today = todayISO();
+  const tasks = hard75TaskDefs();
+  const started = !!hard75.startDate;
+  const start = started ? hard75.startDate : today;
+  const daysInto = started ? Math.max(1, Math.floor((new Date(today+"T00:00:00") - new Date(start+"T00:00:00")) / 86400000) + 1) : 1;
+  const currentEntry = get75HardEntry(today);
+  const doneToday = tasks.reduce((sum, task)=>sum + (currentEntry[task.key] ? 1 : 0), 0);
+  let completedDays = 0;
+  let streak = 0;
+  for(let i=0;i<75;i++){
+    const day = addDaysISO(start, i);
+    if(day > today) break;
+    if(is75HardComplete(day)){
+      completedDays += 1;
+      if(day === addDaysISO(today, -streak)) streak += 1;
+    }else if(day === addDaysISO(today, -streak)){
+      break;
+    }
+  }
+  return {
+    started,
+    start,
+    daysInto,
+    doneToday,
+    totalTasks: tasks.length,
+    completedDays,
+    streak,
+    percent: Math.max(0, Math.min(100, Math.round((completedDays / 75) * 100)))
+  };
 }
 
 function defaultWeeklyPlan(){
@@ -910,6 +982,7 @@ const STORAGE_GETTERS = {
   workout_templates: ()=>workoutTemplates,
   custom_challenges: ()=>customChallenges,
   active_challenge_id: ()=>activeChallengeId,
+  hard_75: ()=>hard75,
   weekly_plan: ()=>weeklyPlan,
   reminder_settings: ()=>reminderSettings,
   last_backup_export: ()=>lastBackupExport,
@@ -967,6 +1040,8 @@ let readinessLog=lsGet("readiness_log",{});
 let workoutTemplates=lsGet("workout_templates", defaultWorkoutTemplates());
 let customChallenges=lsGet("custom_challenges", defaultCustomChallenges());
 let activeChallengeId=lsGet("active_challenge_id", "");
+let hard75=Object.assign(default75HardState(), lsGet("hard_75", {}));
+hard75.tasks = normalizeMentalToughnessTasks(hard75.tasks);
 let weeklyPlan=Object.assign(defaultWeeklyPlan(), lsGet("weekly_plan", {}));
 let reminderSettings=Object.assign(defaultReminderSettings(), lsGet("reminder_settings", {}));
 let lastBackupExport=lsGet("last_backup_export",{date:"", text:""});
@@ -1231,7 +1306,7 @@ const MOMENTUM_DATA_KEYS = [
   "workout_entries","bp_log","h_log","weight_start","weight_goal",
   "lw_days","lw_epoch","focus_week","reflections","mot_log",
   "gratitude_log","journal_log","weekly_mantra","daily_checkins","achievements",
-  "habit_defs","readiness_log","workout_templates","custom_challenges","active_challenge_id","weekly_plan","reminder_settings","last_backup_export",
+  "habit_defs","readiness_log","workout_templates","custom_challenges","active_challenge_id","hard_75","weekly_plan","reminder_settings","last_backup_export",
   "week_epoch_snapshot","last_week_snapshot","weekly_goal","adaptive_goals",
   "fired_flags","todays_wins","month_theme","low_energy","unlocked",
   "longTermProg","monthlyProg","weeklyProg","weekendProg",
@@ -2488,6 +2563,160 @@ function renderWorkout(){
   }
 }
 
+function render75Hard(){
+  const wrap=document.getElementById("screen-75hard");
+  if(!wrap) return;
+  const today = todayISO();
+  const tasks = hard75TaskDefs();
+  const stats = get75HardStats();
+  const entry = get75HardEntry(today);
+  const recentDays = [];
+  for(let i=0;i<7;i++){
+    const day = addDaysISO(today, -i);
+    const row = get75HardEntry(day);
+    const done = tasks.reduce((sum, task)=>sum + (row[task.key] ? 1 : 0), 0);
+    recentDays.push({day, done, complete:is75HardComplete(day)});
+  }
+
+  wrap.innerHTML=`
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">Mental Toughness</div>
+          <h2 class="hero-title">${stats.started ? `Day ${Math.min(stats.daysInto, 75)} of 75` : "Start your reset"}</h2>
+          <div class="small hero-sub">Track a steady daily discipline routine with a little structure and a little grace.</div>
+        </div>
+        <div class="score-pill">
+          <div class="small">Completed</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${stats.completedDays}</div>
+        </div>
+      </div>
+      <div class="quick-grid" style="margin-top:14px;">
+        <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${stats.doneToday}/${stats.totalTasks}</div></div><div class="small">Tasks checked</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Streak</div><div class="badge-num">${stats.streak}</div></div><div class="small">Completed days in a row</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Start</div><div class="badge-num">${stats.started ? stats.start.slice(5) : "--"}</div></div><div class="small">Challenge start date</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Progress</div><div class="badge-num">${stats.percent}%</div></div><div class="small">${stats.completedDays}/75 full days</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Plan Setup</h2>
+      <label class="input-label">Start date</label>
+      <input class="input" id="hard75Start" type="date" value="${escapeAttr(hard75.startDate || today)}">
+      <div class="btn-row">
+        <button class="btn primary" id="save75StartBtn">${stats.started ? "Update start" : "Start plan"}</button>
+        <button class="btn danger" id="reset75Btn">Reset plan</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Today's Checklist</h2>
+      <div class="small">Check each item when it feels honestly complete for ${today}.</div>
+      ${tasks.map(task=>`
+        <label class="list-row soft" style="align-items:center;">
+          <div style="flex:1;">${task.label}</div>
+          <input type="checkbox" data-75-task="${task.key}" ${entry[task.key] ? "checked" : ""} style="transform:scale(1.2);">
+        </label>
+      `).join("")}
+      <label class="input-label" style="margin-top:10px;">Daily note</label>
+      <textarea class="input" id="hard75Note" placeholder="What felt strong today?">${escapeHtml(entry.notes || "")}</textarea>
+      <div class="btn-row">
+        <button class="btn" id="save75NoteBtn">Save note</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Your Goals</h2>
+      <div class="small">Customize this checklist so it matches your version of mental toughness.</div>
+      ${tasks.map(task=>`
+        <div class="list-row soft">
+          <div style="flex:1;">${escapeHtml(task.label)}</div>
+          <button class="btn danger" type="button" data-del-75-goal="${task.key}">Delete</button>
+        </div>
+      `).join("")}
+      <input class="input" id="new75Goal" placeholder="Add a new daily goal">
+      <div class="btn-row">
+        <button class="btn" id="add75GoalBtn">Add goal</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Last 7 Days</h2>
+      ${recentDays.map(day=>`
+        <div class="list-row soft">
+          <div style="flex:1;">
+            <div style="font-weight:600;">${day.day}</div>
+            <div class="small">${day.done}/${tasks.length} items ${day.complete ? "- full day" : ""}</div>
+          </div>
+          <div class="badge-num">${day.complete ? "Done" : day.done}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  wrap.querySelector("#save75StartBtn").onclick=()=>{
+    hard75.startDate = wrap.querySelector("#hard75Start").value || today;
+    persist();
+    showToast("Mental Toughness start saved");
+    render75Hard();
+  };
+  wrap.querySelector("#reset75Btn").onclick=()=>{
+    hard75 = default75HardState();
+    persist();
+    showToast("Mental Toughness reset");
+    render75Hard();
+  };
+  wrap.querySelectorAll("[data-75-task]").forEach(box=>{
+    box.onchange=()=>{
+      hard75.days = hard75.days || {};
+      hard75.days[today] = Object.assign({notes: entry.notes || ""}, hard75.days[today] || {}, {[box.getAttribute("data-75-task")]: box.checked});
+      persist();
+      showToast("Checklist updated");
+      render75Hard();
+    };
+  });
+  wrap.querySelector("#save75NoteBtn").onclick=()=>{
+    hard75.days = hard75.days || {};
+    hard75.days[today] = Object.assign({}, hard75.days[today] || {}, {notes:(wrap.querySelector("#hard75Note").value || "").trim()});
+    persist();
+    showToast("Mental Toughness note saved");
+    render75Hard();
+  };
+  wrap.querySelector("#add75GoalBtn").onclick=()=>{
+    const input = wrap.querySelector("#new75Goal");
+    const label = (input.value || "").trim();
+    if(!label){
+      showToast("Add a goal name");
+      return;
+    }
+    const keyBase = label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || ("mt_goal_" + uid());
+    let key = keyBase;
+    let i = 2;
+    while(tasks.some(task=>task.key===key)){
+      key = `${keyBase}_${i++}`;
+    }
+    hard75.tasks = [...tasks, {key, label}];
+    input.value = "";
+    persist();
+    showToast("Goal added");
+    render75Hard();
+  };
+  wrap.querySelectorAll("[data-del-75-goal]").forEach(btn=>{
+    btn.onclick=()=>{
+      const key = btn.getAttribute("data-del-75-goal") || "";
+      hard75.tasks = tasks.filter(task=>task.key!==key);
+      Object.keys(hard75.days || {}).forEach(day=>{
+        if(hard75.days[day] && Object.prototype.hasOwnProperty.call(hard75.days[day], key)){
+          delete hard75.days[day][key];
+        }
+      });
+      persist();
+      showToast("Goal removed");
+      render75Hard();
+    };
+  });
+}
+
 function renderHistory(){
   const wrap=document.getElementById("screen-history");
   if(!wrap) return;
@@ -2646,6 +2875,7 @@ const screenRenderers = {
   health: renderHealth,
   lifestyle: renderLifestyle,
   workout: renderWorkout,
+  "75hard": render75Hard,
   history: renderHistory
 };
 
