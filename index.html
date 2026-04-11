@@ -217,6 +217,7 @@ textarea.input{
   display:flex;
   flex-direction:column;
   align-items:center;
+  justify-content:center;
   color:var(--text);
   text-decoration:none;
   font-weight:500;
@@ -224,6 +225,9 @@ textarea.input{
   border:0;
   padding:0;
   font-family:inherit;
+  min-width:0;
+  flex:1;
+  font-size:11px;
 }
 .nav-btn.active{
   color:var(--accent);
@@ -469,18 +473,18 @@ textarea.input{
     <div class="small">Loading your dashboard...</div>
   </div>
 </div>
+<div id="screen-plan" class="screen hidden"></div>
 <div id="screen-health" class="screen hidden"></div>
 <div id="screen-lifestyle" class="screen hidden"></div>
 <div id="screen-workout" class="screen hidden"></div>
 <div id="screen-75hard" class="screen hidden"></div>
+<div id="screen-reset" class="screen hidden"></div>
 <div id="screen-history" class="screen hidden"></div>
 
 <nav class="nav">
   <button class="nav-btn active" data-target="overview"><div class="nav-emoji">T</div>Today</button>
+  <button class="nav-btn" data-target="plan"><div class="nav-emoji">P</div>Plan</button>
   <button class="nav-btn" data-target="health"><div class="nav-emoji">H</div>Health</button>
-  <button class="nav-btn" data-target="lifestyle"><div class="nav-emoji">L</div>Lifestyle</button>
-  <button class="nav-btn" data-target="workout"><div class="nav-emoji">W</div>Workout</button>
-  <button class="nav-btn" data-target="75hard"><div class="nav-emoji">MT</div>Mental Toughness</button>
   <button class="nav-btn" data-target="history"><div class="nav-emoji">R</div>History</button>
 </nav>
 
@@ -662,6 +666,54 @@ function hard75TaskDefs(){
   return normalizeMentalToughnessTasks(hard75?.tasks);
 }
 
+function defaultResetWeekTemplate(){
+  return {
+    Mon:{movement:"5k training", care:"Tidy one small area", meaning:"Gratitude"},
+    Tue:{movement:"Walk", care:"Skincare", meaning:"Journal"},
+    Wed:{movement:"Yoga", care:"Nourishing meal", meaning:"One thing to look forward to"},
+    Thu:{movement:"Walk or run", care:"Early night", meaning:"Gratitude"},
+    Fri:{movement:"5k training", care:"Haircut or home care task", meaning:"Journal"},
+    Sat:{movement:"Longer walk or run", care:"Enjoyable outing or coffee", meaning:"Reflect"},
+    Sun:{movement:"Spa Sunday or stretch", care:"Reset your space", meaning:"Plan the week"}
+  };
+}
+
+function defaultResetState(){
+  return {days:{}, weekTemplate:defaultResetWeekTemplate()};
+}
+
+function normalizeResetWeekTemplate(template){
+  const base = Object.assign({}, defaultResetWeekTemplate(), template || {});
+  ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].forEach(day=>{
+    base[day] = Object.assign({movement:"", care:"", meaning:""}, base[day] || {});
+  });
+  return base;
+}
+
+function getResetEntry(day){
+  return Object.assign({body:false, care:false, meaning:false, note:""}, resetCompass?.days?.[day] || {});
+}
+
+function getResetStats(){
+  const today = todayISO();
+  const entry = getResetEntry(today);
+  const doneToday = ["body","care","meaning"].reduce((sum,key)=>sum + (entry[key] ? 1 : 0), 0);
+  let streak = 0;
+  for(let i=0;i<60;i++){
+    const day = addDaysISO(today, -i);
+    const row = getResetEntry(day);
+    if(row.body || row.care || row.meaning) streak += 1;
+    else break;
+  }
+  let fullDays = 0;
+  for(let i=0;i<28;i++){
+    const day = addDaysISO(today, -i);
+    const row = getResetEntry(day);
+    if(row.body && row.care && row.meaning) fullDays += 1;
+  }
+  return {doneToday, streak, fullDays};
+}
+
 function get75HardEntry(day){
   return Object.assign({notes:""}, hard75?.days?.[day] || {});
 }
@@ -728,6 +780,11 @@ function planTone(label){
   if(/strength|push|hard|long/i.test(label||"")) return "tone-ready";
   if(/cardio|steady|open/i.test(label||"")) return "tone-steady";
   return "tone-recovery";
+}
+
+function openPlan(mode){
+  window._planMode = mode || "overview";
+  showScreen("plan");
 }
 
 function getLaggingHabit(){
@@ -897,7 +954,7 @@ function buildTodayPlan(){
       label:"Set your recovery first",
       tone:"soft",
       text:"Log energy, soreness, and sleep to get a tailored plan.",
-      actions:["Save recovery","Do 1 easy habit"]
+      actions:["Save recovery","Do 1 easy win"]
     };
   }
   if(score >= 78){
@@ -912,8 +969,8 @@ function buildTodayPlan(){
     return {
       label:"Steady day",
       tone:"soft",
-      text:`Aim for consistency: one workout plus ${habitGap > 0 ? Math.min(2, habitGap) : 1} habit checks.`,
-      actions:["Walk or ride","Check off habits"]
+      text:`Aim for consistency: one workout plus ${habitGap > 0 ? Math.min(2, habitGap) : 1} small reset actions.`,
+      actions:["Walk or ride","Add a reset win"]
     };
   }
   return {
@@ -943,7 +1000,7 @@ async function maybeSendReminder(){
       const reg = await navigator.serviceWorker.getRegistration();
       if(reg){
         await reg.showNotification("Momentum check-in", {
-          body:"Log one habit or one workout today to keep your streak moving.",
+          body:"Log one reset win or one workout today to keep your streak moving.",
           icon:"./icons/icon-192.png",
           badge:"./icons/icon-192.png",
           tag:"momentum-daily-reminder"
@@ -958,7 +1015,7 @@ async function maybeSendReminder(){
 
   reminderSettings.fallbackShown = today;
   persist();
-  showToast("Reminder: log one habit or one workout today");
+  showToast("Reminder: log one reset win or one workout today");
 }
 
 const STORAGE_GETTERS = {
@@ -983,6 +1040,7 @@ const STORAGE_GETTERS = {
   custom_challenges: ()=>customChallenges,
   active_challenge_id: ()=>activeChallengeId,
   hard_75: ()=>hard75,
+  reset_compass: ()=>resetCompass,
   weekly_plan: ()=>weeklyPlan,
   reminder_settings: ()=>reminderSettings,
   last_backup_export: ()=>lastBackupExport,
@@ -1042,6 +1100,8 @@ let customChallenges=lsGet("custom_challenges", defaultCustomChallenges());
 let activeChallengeId=lsGet("active_challenge_id", "");
 let hard75=Object.assign(default75HardState(), lsGet("hard_75", {}));
 hard75.tasks = normalizeMentalToughnessTasks(hard75.tasks);
+let resetCompass=Object.assign(defaultResetState(), lsGet("reset_compass", {}));
+resetCompass.weekTemplate = normalizeResetWeekTemplate(resetCompass.weekTemplate);
 let weeklyPlan=Object.assign(defaultWeeklyPlan(), lsGet("weekly_plan", {}));
 let reminderSettings=Object.assign(defaultReminderSettings(), lsGet("reminder_settings", {}));
 let lastBackupExport=lsGet("last_backup_export",{date:"", text:""});
@@ -1306,7 +1366,7 @@ const MOMENTUM_DATA_KEYS = [
   "workout_entries","bp_log","h_log","weight_start","weight_goal",
   "lw_days","lw_epoch","focus_week","reflections","mot_log",
   "gratitude_log","journal_log","weekly_mantra","daily_checkins","achievements",
-  "habit_defs","readiness_log","workout_templates","custom_challenges","active_challenge_id","hard_75","weekly_plan","reminder_settings","last_backup_export",
+  "habit_defs","readiness_log","workout_templates","custom_challenges","active_challenge_id","hard_75","reset_compass","weekly_plan","reminder_settings","last_backup_export",
   "week_epoch_snapshot","last_week_snapshot","weekly_goal","adaptive_goals",
   "fired_flags","todays_wins","month_theme","low_energy","unlocked",
   "longTermProg","monthlyProg","weeklyProg","weekendProg",
@@ -1390,7 +1450,6 @@ function renderOverview(){
   const reflectionsThisWeek = reflections.filter(r=>(r.week||r.date)>=weekEpoch).length;
   const gratitudeThisWeek = gratitudeLog.filter(r=>r.date>=weekEpoch).length;
   const journalThisWeek = journalLog.filter(r=>r.date>=weekEpoch).length;
-  const todayHabits = habitDefs.reduce((s,h)=>s+(lwDays?.[t]?.[h.key]?1:0),0);
   const todayWorkouts = entries.filter(e=>(e.date||"").slice(0,10)===t).length;
   const readiness = getTodayReadiness();
   const readinessScore = readinessScoreFor(t);
@@ -1402,14 +1461,12 @@ function renderOverview(){
   const todaySlot = weeklyPlanLabel(t);
   const nextSlot = weeklyPlanLabel(addDaysISO(t,1));
   const toneClass = planTone(todayPlan.label + " " + todaySlot);
-  const laggingHabit = getLaggingHabit();
   const planDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const last14 = [];
   for(let i=13;i>=0;i--){
     const day = addDaysISO(t, -i);
     const row = lwDays?.[day] || {};
-    const count = habitDefs.reduce((s,h)=>s+(row[h.key]?1:0),0);
-    last14.push({ day, count, hasWorkout: entries.some(e=>(e.date||"").slice(0,10)===day) });
+    last14.push({ day, count:Object.values(row).filter(Boolean).length, hasWorkout: entries.some(e=>(e.date||"").slice(0,10)===day) });
   }
 
   const todayPlanButtons = todayPlan.actions.map(action=>`<button class="btn ${todayPlan.tone==="primary"?"primary":"soft"}" data-plan-action="${escapeAttr(action)}">${escapeHtml(action)}</button>`).join("");
@@ -1419,8 +1476,6 @@ function renderOverview(){
     return `<div class="calendar-day ${css}"><div class="small">${day.day.slice(5)}</div><div class="badge-num">${day.count}</div><div class="small">${day.hasWorkout?"Workout":"-"}</div></div>`;
   }).join("");
   const badgeHtml = recentBadges.length ? recentBadges.map(b=>`<div class="list-row soft"><div style="flex:1;"><div style="font-weight:600;">${escapeHtml(b.rewardName || "Badge")}</div><div class="small">${escapeHtml(b.badgeTier || "Bronze")} tier - ${escapeHtml(b.name || "Challenge")} - ${escapeHtml((b.completedAt||"").slice(0,10))}</div></div></div>`).join("") : '<div class="small">No challenge badges yet.</div>';
-  const laggingText = laggingHabit ? `Most ignored habit: ${escapeHtml(laggingHabit.label)}${laggingHabit.gap > 0 ? ` (${laggingHabit.gap} days ago)` : " - already checked recently"}` : "No habit drift right now.";
-
   wrap.innerHTML=`
     <div class="card hero-card">
       <div class="hero-head">
@@ -1440,19 +1495,18 @@ function renderOverview(){
         </div>
       </div>
       <div class="quick-grid" style="margin-top:14px;">
-        <div class="stat-chip"><div class="row-between"><div>Habits</div><div class="badge-num">${todayHabits}/${habitDefs.length}</div></div><div class="small">Done today</div></div>
         <div class="stat-chip"><div class="row-between"><div>Workout</div><div class="badge-num">${todayWorkouts}</div></div><div class="small">Sessions today</div></div>
         <div class="stat-chip"><div class="row-between"><div>Recovery</div><div class="badge-num">${readinessScore==null?"-":readinessScore}</div></div><div class="small">Energy ${readiness.energy||"-"} / Soreness ${readiness.soreness||"-"}</div></div>
         <div class="stat-chip"><div class="row-between"><div>Record</div><div class="badge-num">${records.bestWeek.value || 0}</div></div><div class="small">Best week points</div></div>
       </div>
       <div class="hero-panel" style="margin-top:14px;">
         <div class="section-title"><strong>Focus for today</strong><span class="pill ${toneClass}">${escapeHtml(todaySlot)}</span></div>
-        <div class="small" style="margin-top:8px;">${laggingText}</div>
+        <div class="small" style="margin-top:8px;">Pick one useful thing, do it honestly, and let the day build from there.</div>
         <div class="btn-row">${todayPlanButtons}</div>
       </div>
       <div class="fab-row">
-        <button class="btn primary" id="quickHabitBtn">Open habits</button>
         <button class="btn primary" id="quickWorkoutBtn">Open workout</button>
+        <button class="btn primary" id="quickPlanBtn">Open plan</button>
       </div>
       <div class="btn-row sticky-actions" style="margin-top:10px;">
         <button class="btn" id="openHistoryBtn">View history</button>
@@ -1488,7 +1542,7 @@ function renderOverview(){
 
     <div class="card">
       <h2>Consistency Calendar</h2>
-      <div class="small">Last 14 days of habits and workouts.</div>
+      <div class="small">Last 14 days of activity and workouts.</div>
       <div class="calendar-strip">${calendarHtml}</div>
     </div>
 
@@ -1554,15 +1608,14 @@ function renderOverview(){
     showToast(compliment());
     renderOverview();
   };
-  wrap.querySelector("#quickHabitBtn").onclick=()=>showScreen("lifestyle");
-  wrap.querySelector("#quickWorkoutBtn").onclick=()=>showScreen("workout");
+  wrap.querySelector("#quickWorkoutBtn").onclick=()=>openPlan("train");
+  wrap.querySelector("#quickPlanBtn").onclick=()=>showScreen("plan");
   wrap.querySelector("#openHistoryBtn").onclick=()=>showScreen("history");
-  wrap.querySelector("#manageChallengeBtn").onclick=()=>showScreen("workout");
+  wrap.querySelector("#manageChallengeBtn").onclick=()=>openPlan("challenge");
   wrap.querySelectorAll("[data-plan-action]").forEach(btn=>{
     btn.onclick=()=>{
       const action = btn.getAttribute("data-plan-action") || "";
-      if(/habit/i.test(action)) showScreen("lifestyle");
-      else showScreen("workout");
+      openPlan("train");
     };
   });
   wrap.querySelectorAll("[data-edit-plan]").forEach(btn=>{
@@ -2582,9 +2635,9 @@ function render75Hard(){
     <div class="card hero-card">
       <div class="hero-head">
         <div>
-          <div class="hero-kicker">Mental Toughness</div>
+          <div class="hero-kicker">Challenge</div>
           <h2 class="hero-title">${stats.started ? `Day ${Math.min(stats.daysInto, 75)} of 75` : "Start your reset"}</h2>
-          <div class="small hero-sub">Track a steady daily discipline routine with a little structure and a little grace.</div>
+          <div class="small hero-sub">Track a structured discipline challenge with goals you can shape to fit your life.</div>
         </div>
         <div class="score-pill">
           <div class="small">Completed</div>
@@ -2627,7 +2680,7 @@ function render75Hard(){
 
     <div class="card">
       <h2>Your Goals</h2>
-      <div class="small">Customize this checklist so it matches your version of mental toughness.</div>
+      <div class="small">Customize this checklist so it matches the kind of challenge you actually want to keep.</div>
       ${tasks.map(task=>`
         <div class="list-row soft">
           <div style="flex:1;">${escapeHtml(task.label)}</div>
@@ -2657,13 +2710,13 @@ function render75Hard(){
   wrap.querySelector("#save75StartBtn").onclick=()=>{
     hard75.startDate = wrap.querySelector("#hard75Start").value || today;
     persist();
-    showToast("Mental Toughness start saved");
+    showToast("Challenge start saved");
     render75Hard();
   };
   wrap.querySelector("#reset75Btn").onclick=()=>{
     hard75 = default75HardState();
     persist();
-    showToast("Mental Toughness reset");
+    showToast("Challenge reset");
     render75Hard();
   };
   wrap.querySelectorAll("[data-75-task]").forEach(box=>{
@@ -2679,7 +2732,7 @@ function render75Hard(){
     hard75.days = hard75.days || {};
     hard75.days[today] = Object.assign({}, hard75.days[today] || {}, {notes:(wrap.querySelector("#hard75Note").value || "").trim()});
     persist();
-    showToast("Mental Toughness note saved");
+    showToast("Challenge note saved");
     render75Hard();
   };
   wrap.querySelector("#add75GoalBtn").onclick=()=>{
@@ -2715,6 +2768,256 @@ function render75Hard(){
       render75Hard();
     };
   });
+}
+
+function renderReset(){
+  const wrap=document.getElementById("screen-reset");
+  if(!wrap) return;
+  const today = todayISO();
+  const todayKey = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][new Date(today+"T00:00:00").getDay()];
+  const todayPlan = resetCompass.weekTemplate[todayKey] || {movement:"", care:"", meaning:""};
+  const stats = getResetStats();
+  const entry = getResetEntry(today);
+  const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+  wrap.innerHTML=`
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">Reset</div>
+          <h2 class="hero-title">Body, care, meaning</h2>
+          <div class="small hero-sub">Move your body, take care of yourself, and give your mind one small meaningful place to land each day.</div>
+        </div>
+        <div class="score-pill">
+          <div class="small">Today</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${stats.doneToday}/3</div>
+        </div>
+      </div>
+      <div class="quick-grid" style="margin-top:14px;">
+        <div class="stat-chip"><div class="row-between"><div>Streak</div><div class="badge-num">${stats.streak}</div></div><div class="small">Days with any reset action</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Full days</div><div class="badge-num">${stats.fullDays}</div></div><div class="small">All 3 anchors in last 28 days</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Movement</div><div class="badge-num">${entry.body ? "Done" : "Open"}</div></div><div class="small">${escapeHtml(todayPlan.movement || "Choose one thing for your body")}</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Meaning</div><div class="badge-num">${entry.meaning ? "Done" : "Open"}</div></div><div class="small">${escapeHtml(todayPlan.meaning || "Choose one thing that matters")}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Why this works</h2>
+      <div class="list-row soft"><div style="flex:1;"><strong>Movement</strong><div class="small">Keeps you from sinking. Walks, runs, yoga, stretching, anything that gets you out of your head and into your body.</div></div></div>
+      <div class="list-row soft"><div style="flex:1;"><strong>Care</strong><div class="small">Keeps life softer and more held together. Clean sheets, skincare, grocery shop, tidy room, haircut, early bedtime.</div></div></div>
+      <div class="list-row soft"><div style="flex:1;"><strong>Meaning</strong><div class="small">Keeps you from drifting. Gratitude, journaling, texting someone, planning something to look forward to, writing the life you want.</div></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Daily Check</h2>
+      <div class="small">That is enough: one thing for your body, one thing that cared for you, and one thing that gave the day meaning.</div>
+      <label class="list-row soft" style="align-items:center;"><div style="flex:1;"><strong>Body</strong><div class="small">${escapeHtml(todayPlan.movement || "Do one body anchor")}</div></div><input type="checkbox" id="resetBody" ${entry.body?"checked":""} style="transform:scale(1.2);"></label>
+      <label class="list-row soft" style="align-items:center;"><div style="flex:1;"><strong>Care</strong><div class="small">${escapeHtml(todayPlan.care || "Do one caring thing")}</div></div><input type="checkbox" id="resetCare" ${entry.care?"checked":""} style="transform:scale(1.2);"></label>
+      <label class="list-row soft" style="align-items:center;"><div style="flex:1;"><strong>Meaning</strong><div class="small">${escapeHtml(todayPlan.meaning || "Do one meaningful thing")}</div></div><input type="checkbox" id="resetMeaning" ${entry.meaning?"checked":""} style="transform:scale(1.2);"></label>
+      <label class="input-label" style="margin-top:10px;">Today's note</label>
+      <textarea class="input" id="resetNote" placeholder="What helped today feel safer, steadier, or more hopeful?">${escapeHtml(entry.note || "")}</textarea>
+      <div class="btn-row">
+        <button class="btn" id="saveResetDayBtn">Save day</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Weekly Template</h2>
+      <div class="small">A Monday-start rhythm that feels more sustainable than trying to fix yourself overnight.</div>
+      ${days.map(day=>`
+        <div class="list-row soft">
+          <div style="flex:1;">
+            <div style="font-weight:600;">${day}</div>
+            <div class="small">Move: ${escapeHtml(resetCompass.weekTemplate[day].movement)}</div>
+            <div class="small">Care: ${escapeHtml(resetCompass.weekTemplate[day].care)}</div>
+            <div class="small">Meaning: ${escapeHtml(resetCompass.weekTemplate[day].meaning)}</div>
+          </div>
+          <button class="btn" type="button" data-edit-reset-day="${day}">Edit</button>
+        </div>
+      `).join("")}
+      <div id="resetEditor" class="hidden" style="margin-top:12px;">
+        <div class="small" id="resetEditorTitle">Edit day</div>
+        <label class="input-label">Movement</label>
+        <input class="input" id="resetEditMovement">
+        <label class="input-label">Care</label>
+        <input class="input" id="resetEditCare">
+        <label class="input-label">Meaning</label>
+        <input class="input" id="resetEditMeaning">
+        <div class="btn-row">
+          <button class="btn primary" id="saveResetTemplateBtn">Save day</button>
+          <button class="btn" id="cancelResetTemplateBtn">Cancel</button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn danger" id="resetWeekTemplateBtn">Restore default week</button>
+      </div>
+    </div>
+  `;
+
+  const saveResetEntry = ()=>{
+    resetCompass.days = resetCompass.days || {};
+    resetCompass.days[today] = {
+      body: !!wrap.querySelector("#resetBody").checked,
+      care: !!wrap.querySelector("#resetCare").checked,
+      meaning: !!wrap.querySelector("#resetMeaning").checked,
+      note: (wrap.querySelector("#resetNote").value || "").trim()
+    };
+    persist();
+  };
+
+  wrap.querySelector("#saveResetDayBtn").onclick=()=>{
+    saveResetEntry();
+    showToast("Reset day saved");
+    renderReset();
+  };
+  ["#resetBody","#resetCare","#resetMeaning"].forEach(sel=>{
+    wrap.querySelector(sel).onchange=()=>{
+      saveResetEntry();
+      showToast("Reset updated");
+      renderReset();
+    };
+  });
+  let editingDay = "";
+  const editor = wrap.querySelector("#resetEditor");
+  const editorTitle = wrap.querySelector("#resetEditorTitle");
+  const editMovement = wrap.querySelector("#resetEditMovement");
+  const editCare = wrap.querySelector("#resetEditCare");
+  const editMeaning = wrap.querySelector("#resetEditMeaning");
+  wrap.querySelectorAll("[data-edit-reset-day]").forEach(btn=>{
+    btn.onclick=()=>{
+      editingDay = btn.getAttribute("data-edit-reset-day") || "Mon";
+      const row = resetCompass.weekTemplate[editingDay] || {movement:"", care:"", meaning:""};
+      editorTitle.textContent = `Edit ${editingDay}`;
+      editMovement.value = row.movement || "";
+      editCare.value = row.care || "";
+      editMeaning.value = row.meaning || "";
+      editor.classList.remove("hidden");
+    };
+  });
+  wrap.querySelector("#saveResetTemplateBtn").onclick=()=>{
+    if(!editingDay) return;
+    resetCompass.weekTemplate[editingDay] = {
+      movement:(editMovement.value || "").trim(),
+      care:(editCare.value || "").trim(),
+      meaning:(editMeaning.value || "").trim()
+    };
+    persist();
+    showToast(`${editingDay} plan saved`);
+    renderReset();
+  };
+  wrap.querySelector("#cancelResetTemplateBtn").onclick=()=>{
+    editor.classList.add("hidden");
+  };
+  wrap.querySelector("#resetWeekTemplateBtn").onclick=()=>{
+    resetCompass.weekTemplate = normalizeResetWeekTemplate(defaultResetWeekTemplate());
+    persist();
+    showToast("Default week restored");
+    renderReset();
+  };
+}
+
+function renderPlan(){
+  const wrap=document.getElementById("screen-plan");
+  if(!wrap) return;
+  const mode = window._planMode || "overview";
+  const today = todayISO();
+  const challengeStats = get75HardStats();
+  const resetStats = getResetStats();
+  const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
+
+  let detailHtml = "";
+  if(mode==="train"){
+    detailHtml = `
+      <div class="card">
+        <h2>Training</h2>
+        <div class="small">Your workouts, templates, and training challenge tools live here.</div>
+        <div class="quick-grid" style="margin-top:12px;">
+          <div class="stat-chip"><div class="row-between"><div>This week</div><div class="badge-num">${weeklyProg.strengthSessions||0}/${weeklyProg.cardioSessions||0}</div></div><div class="small">Strength / cardio days</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Steps</div><div class="badge-num">${weeklyProg.steps||0}</div></div><div class="small">This week</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="planOpenWorkoutBtn">Open training tools</button>
+        </div>
+      </div>
+    `;
+  } else if(mode==="challenge"){
+    detailHtml = `
+      <div class="card">
+        <h2>Challenge</h2>
+        <div class="small">Use this when you want a sharper, more structured push.</div>
+        <div class="quick-grid" style="margin-top:12px;">
+          <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${challengeStats.doneToday}/${challengeStats.totalTasks}</div></div><div class="small">Challenge items complete</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Progress</div><div class="badge-num">${challengeStats.completedDays}</div></div><div class="small">Completed days</div></div>
+        </div>
+        <div class="small" style="margin-top:12px;">${activeChallenge ? `Workout focus challenge: ${escapeHtml(activeChallenge.name)}` : "No workout focus challenge active right now."}</div>
+        <div class="btn-row">
+          <button class="btn primary" id="planOpenChallengeBtn">Open challenge tools</button>
+        </div>
+      </div>
+    `;
+  } else if(mode==="reset"){
+    detailHtml = `
+      <div class="card">
+        <h2>Reset</h2>
+        <div class="small">Movement keeps you from sinking. Care keeps you from hardening. Meaning keeps you from drifting.</div>
+        <div class="quick-grid" style="margin-top:12px;">
+          <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${resetStats.doneToday}/3</div></div><div class="small">Body / care / meaning</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Full days</div><div class="badge-num">${resetStats.fullDays}</div></div><div class="small">Last 28 days</div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="planOpenResetBtn">Open reset planner</button>
+        </div>
+      </div>
+    `;
+  } else {
+    detailHtml = `
+      <div class="card">
+        <h2>How To Use This App</h2>
+        <div class="small">Today is for doing. Plan is for shaping the week. Health is for body metrics. History is for review.</div>
+        <div class="quick-grid" style="margin-top:12px;">
+          <div class="stat-chip"><div class="row-between"><div>Training</div><div class="badge-num">${entries.filter(e=>(e.date||"").slice(0,10)===today).length}</div></div><div class="small">Workouts today</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Challenge</div><div class="badge-num">${challengeStats.doneToday}/${challengeStats.totalTasks}</div></div><div class="small">Items today</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Reset</div><div class="badge-num">${resetStats.doneToday}/3</div></div><div class="small">Anchors today</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  wrap.innerHTML = `
+    <div class="card hero-card">
+      <div class="hero-head">
+        <div>
+          <div class="hero-kicker">Plan</div>
+          <h2 class="hero-title">Shape the week, not the chaos</h2>
+          <div class="small hero-sub">This is the calmer control center for training, challenges, and reset routines.</div>
+        </div>
+        <div class="score-pill">
+          <div class="small">Weekly plan</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${escapeHtml(weeklyPlanLabel(today))}</div>
+        </div>
+      </div>
+      <div class="segmented" style="margin-top:16px;">
+        <button class="btn ${mode==="overview"?"soft":""}" data-plan-mode="overview">Overview</button>
+        <button class="btn ${mode==="train"?"soft":""}" data-plan-mode="train">Train</button>
+        <button class="btn ${mode==="challenge"?"soft":""}" data-plan-mode="challenge">Challenge</button>
+        <button class="btn ${mode==="reset"?"soft":""}" data-plan-mode="reset">Reset</button>
+      </div>
+    </div>
+    ${detailHtml}
+  `;
+
+  wrap.querySelectorAll("[data-plan-mode]").forEach(btn=>{
+    btn.onclick=()=>{
+      window._planMode = btn.getAttribute("data-plan-mode") || "overview";
+      renderPlan();
+    };
+  });
+  const openWorkoutBtn = wrap.querySelector("#planOpenWorkoutBtn");
+  if(openWorkoutBtn) openWorkoutBtn.onclick=()=>showScreen("workout");
+  const openChallengeBtn = wrap.querySelector("#planOpenChallengeBtn");
+  if(openChallengeBtn) openChallengeBtn.onclick=()=>showScreen("75hard");
+  const openResetBtn = wrap.querySelector("#planOpenResetBtn");
+  if(openResetBtn) openResetBtn.onclick=()=>showScreen("reset");
 }
 
 function renderHistory(){
@@ -2872,10 +3175,12 @@ function renderHistory(){
 
 const screenRenderers = {
   overview: renderOverview,
+  plan: renderPlan,
   health: renderHealth,
   lifestyle: renderLifestyle,
   workout: renderWorkout,
   "75hard": render75Hard,
+  reset: renderReset,
   history: renderHistory
 };
 
@@ -2904,7 +3209,8 @@ function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('screen-'+name).classList.remove('hidden');
-  document.querySelector('.nav-btn[data-target="'+name+'"]').classList.add('active');
+  const navBtn = document.querySelector('.nav-btn[data-target="'+name+'"]');
+  if(navBtn) navBtn.classList.add('active');
   activeScreen = name;
   if(name==="lifestyle"){
     window._lifeSelected = todayISO();
