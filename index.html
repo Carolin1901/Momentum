@@ -5,21 +5,25 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no" />
 <link rel="manifest" href="manifest.json" />
-<meta name="theme-color" content="#0f172a" />
+<meta name="theme-color" content="#0f141b" />
 <title>Momentum</title>
 <style>
 :root {
-  --bg:#07111f;
-  --bg-top:#10233f;
-  --card:#102033;
-  --card-strong:#152942;
-  --border:#27415f;
-  --text:#f8fafc;
-  --dim:#9ab0c8;
-  --accent:#22c55e;
-  --accent-2:#f59e0b;
-  --accent-cool:#38bdf8;
-  --danger:#f87171;
+  --bg:#0f141b;
+  --bg-top:#161c25;
+  --bg-deep:#0b1016;
+  --card:#171f2a;
+  --card-strong:#202a36;
+  --border:rgba(196,214,233,.11);
+  --border-strong:rgba(136,223,214,.22);
+  --text:#f3f7fb;
+  --dim:#9aa8b8;
+  --accent:#37b7ac;
+  --accent-2:#76ddd3;
+  --accent-cool:#6eb7ba;
+  --accent-soft:rgba(55,183,172,.16);
+  --glow:0 18px 44px rgba(0,0,0,.34);
+  --danger:#b6483b;
   --radius-lg:16px;
   --radius-md:12px;
   --radius-xl:24px;
@@ -32,12 +36,25 @@
 body{
   margin:0;
   background:
-    radial-gradient(circle at top, rgba(56,189,248,.18), transparent 32%),
-    radial-gradient(circle at bottom right, rgba(34,197,94,.14), transparent 24%),
-    linear-gradient(180deg,var(--bg-top),var(--bg));
+    radial-gradient(circle at 8% 0%, rgba(118,221,211,.16), transparent 26%),
+    radial-gradient(circle at 92% 12%, rgba(55,183,172,.14), transparent 24%),
+    radial-gradient(circle at 50% 100%, rgba(72,107,159,.12), transparent 28%),
+    linear-gradient(180deg,var(--bg-top),var(--bg) 42%, var(--bg-deep));
   color:var(--text);
   font-family:var(--font-family);
   min-height:100vh;
+  position:relative;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,.035), transparent 18%, transparent 82%, rgba(255,255,255,.02)),
+    repeating-linear-gradient(180deg, rgba(255,255,255,.015) 0, rgba(255,255,255,.015) 1px, transparent 1px, transparent 84px);
+  opacity:.42;
+  mix-blend-mode:screen;
 }
 .screen{
   padding:var(--pad-screen);
@@ -47,13 +64,28 @@ body{
   animation:screenIn .28s ease;
 }
 .card{
-  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01)), var(--card);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.016)),
+    linear-gradient(180deg,rgba(118,221,211,.025),transparent 42%),
+    var(--card);
   border:1px solid var(--border);
   border-radius:var(--radius-xl);
-  box-shadow:0 20px 40px rgba(0,0,0,.18);
-  backdrop-filter:blur(10px);
+  box-shadow:var(--glow);
+  backdrop-filter:blur(8px);
   padding:var(--pad-card);
   margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.card::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:18px;
+  right:18px;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+  opacity:.55;
 }
 .card h2{
   margin:0 0 8px 0;
@@ -87,22 +119,26 @@ body{
   text-align:right;
 }
 .progress-bg{
-  background:#334155;
+  background:rgba(255,255,255,.08);
   border-radius:999px;
   height:10px;
   overflow:hidden;
   margin-top:12px;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.28);
 }
 .progress-fg{
-  background:var(--accent);
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
   height:10px;
   width:0%;
+  box-shadow:0 0 18px rgba(118,221,211,.22);
 }
 .big-score{
-  font-size:28px;
-  font-weight:700;
+  font-size:30px;
+  font-weight:800;
   color:var(--accent);
   margin:4px 0;
+  letter-spacing:.01em;
+  text-shadow:0 0 20px rgba(118,221,211,.12);
 }
 .subtle{
   color:var(--dim);
@@ -117,7 +153,7 @@ body{
 }
 .input, textarea.input, select.input{
   width:100%;
-  background:var(--bg);
+  background:linear-gradient(180deg,rgba(8,13,18,.94),rgba(16,22,31,.94));
   color:var(--text);
   border:1px solid var(--border);
   border-radius:var(--radius-md);
@@ -125,10 +161,16 @@ body{
   font-size:16px;
   margin-bottom:12px;
   font-family:inherit;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
 }
 textarea.input{
   min-height:80px;
   resize:none;
+}
+.input:focus, textarea.input:focus, select.input:focus{
+  outline:none;
+  border-color:var(--border-strong);
+  box-shadow:0 0 0 3px rgba(55,183,172,.14);
 }
 .btn-row{
   display:flex;
@@ -137,30 +179,35 @@ textarea.input{
   margin-top:8px;
 }
 .btn{
-  background:rgba(255,255,255,.04);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
   border:1px solid var(--border);
   border-radius:var(--radius-md);
   padding:10px 16px;
   font-size:14px;
   color:var(--text);
-  font-weight:500;
+  font-weight:600;
   min-height:44px;
   touch-action:manipulation;
-  transition:transform .16s ease, border-color .16s ease, background .16s ease;
+  transition:transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
 }
 .btn:active{transform:scale(.98);}
 .btn.danger{
   color:var(--danger);
   border-color:rgba(248,113,113,.6);
+  background:linear-gradient(180deg,rgba(182,72,59,.12),rgba(255,255,255,.02));
 }
 .btn.primary{
-  background:linear-gradient(135deg,var(--accent),#059669);
-  border-color:var(--accent);
-  color:#ecfeff;
+  background:
+    linear-gradient(135deg, rgba(118,221,211,.16), transparent 50%),
+    linear-gradient(135deg,var(--accent),#21847c);
+  border-color:rgba(118,221,211,.42);
+  color:#fff7f1;
+  box-shadow:0 14px 30px rgba(25,113,106,.28);
 }
 .btn.soft{
-  background:rgba(56,189,248,.1);
-  border-color:rgba(56,189,248,.3);
+  background:linear-gradient(180deg,rgba(55,183,172,.14),rgba(255,255,255,.03));
+  border-color:rgba(55,183,172,.22);
 }
 .list-row{
   display:flex;
@@ -179,11 +226,11 @@ textarea.input{
   user-select:none;
 }
 .badge-num{
-  font-weight:600;
+  font-weight:700;
   color:var(--accent);
 }
 .challenge-bar-bg{
-  background:#334155;
+  background:rgba(255,255,255,.09);
   border-radius:999px;
   height:8px;
   overflow:hidden;
@@ -204,14 +251,15 @@ textarea.input{
   right:0;
   bottom:0;
   height:var(--nav-h);
-  background:rgba(7,17,31,.88);
-  border-top:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(16,22,31,.92),rgba(10,15,22,.96));
+  border-top:1px solid rgba(255,255,255,.06);
   display:flex;
   justify-content:space-around;
   align-items:center;
   z-index:999;
   font-size:12px;
   backdrop-filter:blur(18px);
+  box-shadow:0 -12px 34px rgba(0,0,0,.34);
 }
 .nav-btn{
   display:flex;
@@ -228,9 +276,14 @@ textarea.input{
   min-width:0;
   flex:1;
   font-size:11px;
+  margin:6px;
+  border-radius:16px;
+  min-height:54px;
 }
 .nav-btn.active{
   color:var(--accent);
+  background:linear-gradient(180deg,rgba(55,183,172,.18),rgba(255,255,255,.03));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
 }
 .nav-emoji{
   font-size:20px;
@@ -250,7 +303,9 @@ textarea.input{
 }
 .stat-chip{
   border:1px solid var(--border);
-  background:rgba(255,255,255,.04);
+  background:
+    linear-gradient(180deg,rgba(118,221,211,.06),rgba(255,255,255,.02)),
+    rgba(255,255,255,.02);
   border-radius:14px;
   padding:12px;
 }
@@ -268,14 +323,14 @@ textarea.input{
   border-radius:12px;
   padding:10px 6px;
   text-align:center;
-  background:rgba(255,255,255,.03);
+  background:rgba(255,255,255,.028);
 }
 .calendar-day.active{
-  border-color:rgba(16,185,129,.7);
-  background:rgba(16,185,129,.12);
+  border-color:rgba(55,183,172,.34);
+  background:linear-gradient(180deg,rgba(55,183,172,.18),rgba(255,255,255,.03));
 }
 .calendar-day.good{
-  background:rgba(16,185,129,.12);
+  background:rgba(118,221,211,.09);
 }
 .calendar-day.empty{
   opacity:.65;
@@ -287,8 +342,10 @@ textarea.input{
 }
 .hero-card{
   background:
-    radial-gradient(circle at top right, rgba(34,197,94,.28), transparent 35%),
-    linear-gradient(135deg, rgba(21,41,66,.95), rgba(9,19,33,.96));
+    radial-gradient(circle at top right, rgba(118,221,211,.18), transparent 34%),
+    radial-gradient(circle at 10% 100%, rgba(55,183,172,.18), transparent 32%),
+    linear-gradient(135deg, rgba(28,38,51,.98), rgba(13,19,28,.98));
+  border-color:rgba(118,221,211,.14);
 }
 .hero-head{
   display:flex;
@@ -298,16 +355,18 @@ textarea.input{
 }
 .hero-title{
   margin:0;
-  font-size:30px;
-  line-height:1;
-  letter-spacing:.02em;
+  font-size:31px;
+  line-height:.98;
+  letter-spacing:.015em;
+  text-wrap:balance;
 }
 .hero-kicker{
   text-transform:uppercase;
   letter-spacing:.14em;
   font-size:11px;
-  color:#c9f7dd;
+  color:#b9ece6;
   margin-bottom:8px;
+  font-weight:700;
 }
 .hero-sub{
   max-width:32ch;
@@ -317,9 +376,10 @@ textarea.input{
   min-width:96px;
   border-radius:18px;
   padding:12px 14px;
-  background:rgba(7,17,31,.44);
-  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.1);
   text-align:right;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
 }
 .hero-grid{
   display:grid;
@@ -327,11 +387,61 @@ textarea.input{
   gap:12px;
   margin-top:16px;
 }
+.hero-grid.tight{
+  grid-template-columns:1.15fr .85fr;
+  align-items:stretch;
+}
+.hero-split{
+  display:grid;
+  grid-template-columns:1.15fr .85fr;
+  gap:14px;
+  align-items:center;
+  margin-top:14px;
+}
+.hero-copy{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.hero-copy .hero-sub{
+  max-width:28ch;
+}
+.hero-meta{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.hero-mini{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;
+  padding:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+}
+.hero-mini-label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--dim);
+  font-weight:700;
+}
+.hero-mini-value{
+  font-size:20px;
+  font-weight:800;
+  color:var(--text);
+  margin-top:6px;
+}
+.hero-mini-sub{
+  font-size:12px;
+  color:var(--dim);
+  margin-top:4px;
+}
 .hero-panel{
   border:1px solid rgba(255,255,255,.08);
   border-radius:18px;
   padding:14px;
-  background:rgba(7,17,31,.28);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025));
 }
 .hero-badges{
   display:flex;
@@ -346,13 +456,13 @@ textarea.input{
   padding:7px 10px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.05);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
   font-size:12px;
   color:var(--text);
 }
-.tone-ready{color:#bbf7d0;border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.12);}
-.tone-steady{color:#fde68a;border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.12);}
-.tone-recovery{color:#bae6fd;border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);}
+.tone-ready{color:#def9f6;border-color:rgba(55,183,172,.3);background:rgba(55,183,172,.15);}
+.tone-steady{color:#ecfbf9;border-color:rgba(118,221,211,.26);background:rgba(118,221,211,.14);}
+.tone-recovery{color:#d1dcdf;border-color:rgba(110,183,186,.18);background:rgba(110,183,186,.08);}
 .section-title{
   display:flex;
   justify-content:space-between;
@@ -373,8 +483,8 @@ textarea.input{
   text-align:center;
 }
 .day-pill.active{
-  border-color:rgba(34,197,94,.55);
-  background:rgba(34,197,94,.12);
+  border-color:rgba(55,183,172,.3);
+  background:linear-gradient(180deg,rgba(55,183,172,.15),rgba(255,255,255,.03));
 }
 .day-pill .small{display:block;margin-top:4px;}
 .segmented{
@@ -392,7 +502,7 @@ textarea.input{
   border:1px solid var(--border);
   border-radius:16px;
   padding:12px;
-  background:rgba(255,255,255,.04);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
 }
 .record-value{
   font-size:22px;
@@ -400,11 +510,220 @@ textarea.input{
   color:var(--accent);
   margin-top:8px;
 }
+.ring-card{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  min-height:260px;
+}
+.progress-ring{
+  --pct:0;
+  width:186px;
+  height:186px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at center, rgba(17,25,35,.98) 0 61%, transparent 62%),
+    conic-gradient(var(--accent) calc(var(--pct) * 1%), rgba(255,255,255,.08) 0);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 0 1px rgba(255,255,255,.05), 0 16px 34px rgba(0,0,0,.24), inset 0 0 34px rgba(118,221,211,.07);
+  position:relative;
+}
+.progress-ring::after{
+  content:"";
+  position:absolute;
+  inset:13px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.06);
+}
+.ring-center{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+.ring-label{
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--dim);
+  font-weight:700;
+}
+.ring-value{
+  font-size:42px;
+  font-weight:800;
+  line-height:.95;
+  color:var(--text);
+}
+.ring-subvalue{
+  font-size:12px;
+  color:var(--dim);
+}
+.ring-caption{
+  margin-top:12px;
+  font-size:12px;
+  color:#c8d7e5;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.summary-stat{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:12px;
+}
+.summary-kicker{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+  color:var(--dim);
+  font-weight:700;
+}
+.summary-value{
+  font-size:27px;
+  font-weight:800;
+  color:var(--text);
+  margin-top:6px;
+}
+.summary-value.accent{
+  color:var(--accent);
+}
+.summary-note{
+  font-size:12px;
+  color:var(--dim);
+  margin-top:4px;
+  line-height:1.4;
+}
+.stats-list{
+  margin-top:10px;
+}
+.stats-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 0;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.stats-row:first-child{
+  border-top:0;
+  padding-top:0;
+}
+.stats-label{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--dim);
+  font-weight:700;
+}
+.stats-value{
+  font-size:22px;
+  font-weight:800;
+  color:var(--text);
+  text-align:right;
+  max-width:52%;
+  word-break:break-word;
+}
+.stats-sub{
+  font-size:12px;
+  color:var(--dim);
+  margin-top:4px;
+}
+.visual-stack{
+  display:grid;
+  gap:12px;
+  margin-top:14px;
+}
+.visual-card{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
+}
+.bar-meter{
+  margin-top:10px;
+}
+.bar-meter-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:end;
+}
+.bar-meter-title{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--dim);
+  font-weight:700;
+}
+.bar-meter-value{
+  font-size:20px;
+  font-weight:800;
+  color:var(--text);
+}
+.bar-meter-sub{
+  font-size:12px;
+  color:var(--dim);
+  margin-top:4px;
+}
+.mini-rings{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.mini-ring{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
+}
+.mini-ring .progress-ring{
+  width:104px;
+  height:104px;
+}
+.mini-ring .progress-ring::after{
+  inset:9px;
+}
+.mini-ring .ring-value{
+  font-size:24px;
+}
+.mini-ring .ring-subvalue{
+  font-size:11px;
+}
+.section-tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+.section-tabs .small{
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-weight:700;
+}
 .list-row.soft{
   padding:10px 12px;
-  border:1px solid rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.06);
   border-radius:14px;
-  background:rgba(255,255,255,.03);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));
 }
 .fab-row{
   position:sticky;
@@ -423,8 +742,8 @@ textarea.input{
   left:50%;
   transform:translateX(-50%);
   bottom:calc(var(--nav-h) + 16px);
-  background:var(--accent);
-  color:#0f172a;
+  background:linear-gradient(135deg,var(--accent),#21847c);
+  color:#fff8f2;
   font-size:14px;
   font-weight:600;
   padding:10px 16px;
@@ -432,6 +751,7 @@ textarea.input{
   opacity:0;
   transition:opacity .25s;
   z-index:1000;
+  box-shadow:0 14px 30px rgba(25,113,106,.32);
 }
 #toast.show{opacity:1;}
 @keyframes screenIn{
@@ -442,8 +762,11 @@ textarea.input{
   .quick-grid,
   .mini-grid,
   .hero-grid,
+  .hero-split,
   .record-grid,
-  .segmented{
+  .segmented,
+  .mini-rings,
+  .summary-grid{
     grid-template-columns:1fr;
   }
   .week-plan{
@@ -482,10 +805,10 @@ textarea.input{
 <div id="screen-history" class="screen hidden"></div>
 
 <nav class="nav">
-  <button class="nav-btn active" data-target="overview"><div class="nav-emoji">T</div>Today</button>
-  <button class="nav-btn" data-target="plan"><div class="nav-emoji">P</div>Plan</button>
-  <button class="nav-btn" data-target="health"><div class="nav-emoji">H</div>Health</button>
-  <button class="nav-btn" data-target="history"><div class="nav-emoji">R</div>History</button>
+<button class="nav-btn active" data-target="overview"><div class="nav-emoji">🔥</div>Today</button>
+<button class="nav-btn" data-target="workout"><div class="nav-emoji">💪</div>Workout</button>
+<button class="nav-btn" data-target="health"><div class="nav-emoji">❤️</div>Health</button>
+<button class="nav-btn" data-target="history"><div class="nav-emoji">📈</div>History</button>
 </nav>
 
 <script>
@@ -569,7 +892,7 @@ function weightLost(){
 
 
 function compliment(){
-  const msgs=["That counts.", "Quiet progress is still progress.", "You\u2019re building momentum.", "Small actions. Big direction.", "Proof > perfect.", "You showed up \u2014 that\u2019s the win.", "You\u2019re doing the work.", "This is how it changes."];
+  const msgs=["That counts.", "Quiet progress is still progress.", "You\u2019re building momentum.", "Small actions. Big direction.", "Proof > perfect.", "You showed up \u2014 that\u2019s the win.", "You\u2019re doing the work.", "This is how it changes.", "Coach would count that as a win.", "Consistency is beating motivation today.", "That session moved the plan forward.", "This is what follow-through looks like."];
   return msgs[Math.floor(Math.random()*msgs.length)];
 }
 function maybeUnlock(key,label){
@@ -643,14 +966,14 @@ function default75HardState(){
 
 function defaultMentalToughnessTasks(){
   return [
-    {key:"workout1", label:"Movement session 1"},
-    {key:"workout2", label:"Movement session 2"},
-    {key:"outdoor", label:"Get outside for one session"},
-    {key:"water", label:"Hydration goal"},
-    {key:"diet", label:"Nutrition goal"},
-    {key:"reading", label:"Read 10 pages"},
-    {key:"photo", label:"Quick progress photo"},
-    {key:"clean", label:"Stay on plan"}
+    {key:"workout1", label:"💪 Movement session 1"},
+    {key:"workout2", label:"🏃 Movement session 2"},
+    {key:"outdoor", label:"🌤️ Get outside for one session"},
+    {key:"water", label:"💧 Hydration goal"},
+    {key:"diet", label:"🥗 Nutrition goal"},
+    {key:"reading", label:"📖 Read 10 pages"},
+    {key:"photo", label:"📸 Quick progress photo"},
+    {key:"clean", label:"✅ Stay on plan"}
   ];
 }
 
@@ -726,8 +1049,9 @@ function is75HardComplete(day){
 function get75HardStats(){
   const today = todayISO();
   const tasks = hard75TaskDefs();
-  const started = !!hard75.startDate;
-  const start = started ? hard75.startDate : today;
+  const loggedDays = Object.keys(hard75?.days || {}).filter(Boolean).sort();
+  const start = hard75.startDate || loggedDays[0] || today;
+  const started = loggedDays.length > 0 || !!hard75.startDate;
   const daysInto = started ? Math.max(1, Math.floor((new Date(today+"T00:00:00") - new Date(start+"T00:00:00")) / 86400000) + 1) : 1;
   const currentEntry = get75HardEntry(today);
   const doneToday = tasks.reduce((sum, task)=>sum + (currentEntry[task.key] ? 1 : 0), 0);
@@ -763,7 +1087,7 @@ function defaultWeeklyPlan(){
     Thu:"Strength",
     Fri:"Cardio",
     Sat:"Long Session",
-    Sun:"Reset"
+    Sun:"Recovery"
   };
 }
 
@@ -835,49 +1159,119 @@ function computeRecords(){
 }
 
 const CHALLENGE_METRICS = {
-  workout_points_week: {
-    label:"Workout points this week",
-    getValue: ()=>entries.filter(e=>(e.date||"") >= weekEpoch && (e.date||"") < addDaysISO(weekEpoch, 7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0)
-  },
-  strength_sessions_week: {
-    label:"Strength sessions this week",
-    getValue: ()=>weeklyProg.strengthSessions || 0
-  },
-  cardio_sessions_week: {
-    label:"Cardio sessions this week",
-    getValue: ()=>weeklyProg.cardioSessions || 0
-  },
-  steps_week: {
-    label:"Steps this week",
-    getValue: ()=>weeklyProg.steps || 0
-  },
-  mobility_sessions_week: {
-    label:"Mobility sessions this week",
-    getValue: ()=>weeklyProg.mobilitySessions || 0
-  },
-  active_days_7: {
-    label:"Active days in last 7",
-    getValue: ()=>{
-      let total = 0;
-      for(let i=0;i<7;i++){
-        const day = addDaysISO(todayISO(), -i);
-        const hasWorkout = entries.some(e=>(e.date||"").slice(0,10)===day);
-        const hasHabit = habitDefs.some(h=>!!lwDays?.[day]?.[h.key]);
-        if(hasWorkout || hasHabit) total += 1;
-      }
-      return total;
-    }
-  }
+  workout_points: {label:"Workout points", unit:"pts"},
+  workout_count: {label:"Workouts", unit:"sessions"},
+  workout_minutes: {label:"Workout minutes", unit:"min"},
+  bike_miles: {label:"Bike miles", unit:"mi"},
+  run_miles: {label:"Run miles", unit:"mi"},
+  walk_miles: {label:"Walk miles", unit:"mi"},
+  steps: {label:"Steps", unit:"steps"},
+  strength_sessions: {label:"Strength sessions", unit:"sessions"},
+  active_days: {label:"Active days", unit:"days"}
 };
 
+function challengeDateRange(startDate, endDate){
+  const today = todayISO();
+  const start = (startDate || today).slice(0,10);
+  const end = (endDate || start).slice(0,10);
+  return start <= end ? {start, end} : {start:end, end:start};
+}
+
+function firstDayOfMonthISO(dateISO){
+  const base = (dateISO || todayISO()).slice(0,7);
+  return `${base}-01`;
+}
+
+function lastDayOfMonthISO(dateISO){
+  const base = (dateISO || todayISO()).slice(0,7);
+  const dt = new Date(`${base}-01T00:00:00`);
+  dt.setMonth(dt.getMonth() + 1, 0);
+  return dt.toISOString().slice(0,10);
+}
+
+function challengeEntriesFor(challenge){
+  const {start, end} = challengeDateRange(challenge?.startDate, challenge?.endDate);
+  return entries.filter(e=>{
+    const day = (e.date||"").slice(0,10);
+    return day && day >= start && day <= end;
+  });
+}
+
+function challengeMetricValue(metricKey, list){
+  const items = Array.isArray(list) ? list : [];
+  const milesFor = (e)=> (parseFloat(e.miles)||0) + kmToMiles(parseFloat(e.km)||0);
+  const byCat = (re)=> items.filter(e=>re.test(String(e.category||"").toLowerCase()));
+  switch(metricKey){
+    case "workout_points":
+      return items.reduce((s,e)=>s + minutesToPoints(Number(e.duration)||0),0);
+    case "workout_count":
+      return items.length;
+    case "workout_minutes":
+      return items.reduce((s,e)=>s + (Number(e.duration)||0),0);
+    case "bike_miles":
+      return byCat(/cycle|cycling|bike/).reduce((s,e)=>s + milesFor(e),0);
+    case "run_miles":
+      return byCat(/run|running/).reduce((s,e)=>s + milesFor(e),0);
+    case "walk_miles":
+      return byCat(/walk|hike/).reduce((s,e)=>s + milesFor(e),0);
+    case "steps":
+      return items.reduce((s,e)=>s + (Number(e.steps)||0),0);
+    case "strength_sessions":
+      return byCat(/strength|kettlebell|kb|push|circuit/).length;
+    case "active_days":
+      return new Set(items.map(e=>(e.date||"").slice(0,10)).filter(Boolean)).size;
+    default:
+      return 0;
+  }
+}
+
+function formatChallengeValue(metricKey, value){
+  if(/miles/.test(metricKey)) return String(Math.round((Number(value)||0) * 10) / 10);
+  return String(Math.round(Number(value)||0));
+}
+
 function getChallengeProgress(challenge){
-  if(!challenge) return {value:0,target:0,pct:0,label:""};
+  if(!challenge) return {value:0,target:0,pct:0,label:"", unit:"", summary:"", pace:"", rangeLabel:"", daysLeft:0};
   const metric = CHALLENGE_METRICS[challenge.metric];
-  if(!metric) return {value:0,target:Number(challenge.target)||0,pct:0,label:""};
-  const value = Number(metric.getValue() || 0);
   const target = Number(challenge.target) || 0;
+  if(!metric) return {value:0,target,pct:0,label:"", unit:"", summary:"", pace:"", rangeLabel:"", daysLeft:0};
+  const {start, end} = challengeDateRange(challenge.startDate, challenge.endDate);
+  const list = challengeEntriesFor(challenge);
+  const value = Number(challengeMetricValue(challenge.metric, list) || 0);
   const pct = Math.min(100, Math.round((value / (target || 1)) * 100));
-  return {value, target, pct, label:metric.label};
+  const startMs = new Date(start+"T00:00:00").getTime();
+  const endMs = new Date(end+"T23:59:59").getTime();
+  const nowMs = Date.now();
+  const totalDays = Math.max(1, Math.floor((endMs - startMs) / 86400000) + 1);
+  const elapsedDays = Math.max(1, Math.min(totalDays, Math.floor((Math.min(nowMs, endMs) - startMs) / 86400000) + 1));
+  const expected = target ? (target * (elapsedDays / totalDays)) : 0;
+  const pace = !target ? "" : value >= target ? "Done" : value >= expected ? "On pace" : "Behind";
+  const daysLeft = Math.max(0, Math.ceil((endMs - nowMs) / 86400000));
+  return {
+    value,
+    target,
+    pct,
+    label:metric.label,
+    unit:metric.unit,
+    rangeLabel:`${start} to ${end}`,
+    summary:`${formatChallengeValue(challenge.metric, value)} / ${formatChallengeValue(challenge.metric, target)} ${metric.unit}`,
+    pace,
+    daysLeft
+  };
+}
+
+function renderProgressRing(label, value, subvalue, pct, caption){
+  const safePct = Math.max(0, Math.min(100, Math.round(Number(pct)||0)));
+  return `
+    <div class="progress-ring" style="--pct:${safePct};">
+      <div class="ring-center">
+        <div class="ring-label">${escapeHtml(label || "")}</div>
+        <div class="ring-value">${escapeHtml(String(value || "0"))}</div>
+        <div class="ring-subvalue">${escapeHtml(subvalue || "")}</div>
+      </div>
+    </div>
+    ${caption ? `<div class="ring-caption">${escapeHtml(caption)}</div>` : ""}
+  `;
 }
 
 function getBadgeTier(metric, challengeName){
@@ -923,12 +1317,27 @@ function maybeCompleteCustomChallenge(){
 }
 
 function todayActivityCount(){
-  const t = todayISO();
-  const habitCount = Object.values(lwDays?.[t] || {}).filter(Boolean).length;
-  const workoutCount = entries.filter(e=>(e.date||"").slice(0,10)===t).length;
-  const checkinCount = checkins.filter(e=>(e.date||"").slice(0,10)===t).length;
-  const healthCount = bpLog.filter(e=>(e.date||"").slice(0,10)===t).length + hLog.filter(e=>(e.date||"").slice(0,10)===t).length;
-  return habitCount + workoutCount + checkinCount + healthCount;
+  return activitySummaryFor(todayISO()).activeCount;
+}
+
+function activitySummaryFor(day){
+  const workoutCount = entries.filter(e=>(e.date||"").slice(0,10)===day).length;
+  const healthCount = bpLog.filter(e=>(e.date||"").slice(0,10)===day).length + hLog.filter(e=>(e.date||"").slice(0,10)===day).length;
+  const challengeEntry = get75HardEntry(day);
+  const challengeCount = hard75TaskDefs().reduce((sum, task)=>sum + (challengeEntry[task.key] ? 1 : 0), 0);
+  const workoutPoints = entries.filter(e=>(e.date||"").slice(0,10)===day).reduce((sum,e)=>sum + minutesToPoints(Number(e.duration)||0), 0);
+  const points = workoutPoints + healthCount + challengeCount;
+  return {
+    workoutCount,
+    healthCount,
+    challengeCount,
+    points,
+    activeCount: workoutCount + healthCount + challengeCount,
+    hasWorkout: workoutCount > 0,
+    hasHealth: healthCount > 0,
+    hasChallenge: challengeCount > 0,
+    hasAny: workoutCount + healthCount + challengeCount > 0
+  };
 }
 
 function getTodayReadiness(){
@@ -948,13 +1357,12 @@ function readinessScoreFor(day){
 
 function buildTodayPlan(){
   const score = readinessScoreFor(todayISO());
-  const habitGap = Math.max(0, habitDefs.length - habitDefs.reduce((s,h)=>s+(lwDays?.[todayISO()]?.[h.key]?1:0),0));
   if(score == null){
     return {
       label:"Set your recovery first",
       tone:"soft",
       text:"Log energy, soreness, and sleep to get a tailored plan.",
-      actions:["Save recovery","Do 1 easy win"]
+      actions:["Save recovery","Log workout"]
     };
   }
   if(score >= 78){
@@ -969,8 +1377,8 @@ function buildTodayPlan(){
     return {
       label:"Steady day",
       tone:"soft",
-      text:`Aim for consistency: one workout plus ${habitGap > 0 ? Math.min(2, habitGap) : 1} small reset actions.`,
-      actions:["Walk or ride","Add a reset win"]
+      text:"Aim for consistency: one workout and one or two challenge checkmarks is enough.",
+      actions:["Walk or ride","Check challenge"]
     };
   }
   return {
@@ -1000,7 +1408,7 @@ async function maybeSendReminder(){
       const reg = await navigator.serviceWorker.getRegistration();
       if(reg){
         await reg.showNotification("Momentum check-in", {
-          body:"Log one reset win or one workout today to keep your streak moving.",
+          body:"Log a workout, challenge step, or health check today to keep your streak moving.",
           icon:"./icons/icon-192.png",
           badge:"./icons/icon-192.png",
           tag:"momentum-daily-reminder"
@@ -1015,7 +1423,7 @@ async function maybeSendReminder(){
 
   reminderSettings.fallbackShown = today;
   persist();
-  showToast("Reminder: log one reset win or one workout today");
+  showToast("Reminder: log a workout, challenge step, or health check today");
 }
 
 const STORAGE_GETTERS = {
@@ -1283,53 +1691,29 @@ function computeWorkoutPoints(weekStart){
 }
 function registerActivity(){ /* no-op: used by habit tracking */ }
 
-function computeLifestylePoints(weekStart){
+function computeChallengePoints(weekStart){
   // Lifestyle scoring (simple + consistent):
   // Per habit per week:
   //   0â€“4 days = 0 pts
   //   5â€“6 days = 5 pts
   //   7 days   = 10 pts
-  const HABIT_KEYS = ["sleep7","steps","outside","no_sugar","reading","mindbody","declutter30"];
-  const s=new Date(weekStart+"T00:00:00");
-  const days=[];
-  for(let i=0;i<7;i++){ const d=new Date(s); d.setDate(d.getDate()+i); days.push(d.toISOString().slice(0,10)); }
-
-  let total=0;
-  HABIT_KEYS.forEach(k=>{
-    let c=0;
-    days.forEach(dk=>{ if(lwDays?.[dk]?.[k]) c++; });
-    if(c>=7) total+=10;
-    else if(c>=5) total+=5;
-  });
-  return total;
+  const end = addDaysISO(weekStart, 7);
+  return Object.keys(hard75?.days || {}).filter(day=>day>=weekStart && day<end).reduce((sum, day)=>{
+    const row = hard75.days[day] || {};
+    return sum + hard75TaskDefs().reduce((taskSum, task)=>taskSum + (row[task.key] ? 1 : 0), 0);
+  }, 0);
 }
 function computeHealthPoints(weekStart){
-  return bpLog.filter(r=>r.date>=weekStart).length;
-}
-function computeMotivationPoints(weekStart){
-  return motLog.filter(m=>m.date>=weekStart).reduce((sum,m)=>sum+m.points,0);
+  return bpLog.filter(r=>r.date>=weekStart).length + hLog.filter(r=>r.date>=weekStart).length;
 }
 function computeBonus(weekStart){
   let bonus=0;
-  // habit streaks
-  const habitKeys=new Set();
-  Object.values(lwDays).forEach(row=>{
-    Object.keys(row||{}).forEach(k=>habitKeys.add(k));
-  });
-  habitKeys.forEach(k=>{
-    let c=0;
-    const s=new Date(weekStart);
-    for(let i=0;i<7;i++){
-      const d=new Date(s); d.setDate(d.getDate()+i);
-      const dk=d.toISOString().slice(0,10);
-      if(lwDays?.[dk]?.[k]) c++;
-    }
-    if(c>=7) bonus+=5;
-  });
-  // 3+ workouts
   const workoutsThisWeek = entries.filter(e=>e.date>=weekStart).length;
   if(workoutsThisWeek>=3) bonus+=10;
-  // BP victory
+  const challengeDays = Object.keys(hard75?.days || {}).filter(day=>day>=weekStart && day<addDaysISO(weekStart, 7)).filter(day=>is75HardComplete(day)).length;
+  if(challengeDays>=3) bonus+=10;
+  const healthLogsThisWeek = bpLog.filter(r=>r.date>=weekStart).length + hLog.filter(r=>r.date>=weekStart).length;
+  if(healthLogsThisWeek>=3) bonus+=5;
   const last3=bpLog.slice(0,3);
   if(last3.length===3){
     const avgS=Math.round(last3.reduce((s,x)=>s+(parseFloat(x.sys)||0),0)/3);
@@ -1340,12 +1724,11 @@ function computeBonus(weekStart){
 }
 function calcWeekComponents(weekStart){
   const workoutPts=computeWorkoutPoints(weekStart);
-  const lifestylePts=computeLifestylePoints(weekStart);
+  const challengePts=computeChallengePoints(weekStart);
   const healthPts=computeHealthPoints(weekStart);
-  const motivationPts=computeMotivationPoints(weekStart);
   const bonusPts=computeBonus(weekStart);
-  const total=workoutPts+lifestylePts+healthPts+motivationPts+bonusPts;
-  return {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total};
+  const total=workoutPts+challengePts+healthPts+bonusPts;
+  return {workoutPts,challengePts,healthPts,bonusPts,total};
 }
 function calcWeekTotalPoints(weekStart){
   return calcWeekComponents(weekStart).total;
@@ -1441,99 +1824,120 @@ function resetWeekend(){
 // OVERVIEW
 function renderOverview(){
   const wrap=document.getElementById("screen-overview");
-  const {workoutPts,lifestylePts,healthPts,motivationPts,bonusPts,total:thisWeekTotal}=calcWeekComponents(weekEpoch);
+  const {total:thisWeekTotal}=calcWeekComponents(weekEpoch);
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
+  const pointsLeft = Math.max(0, (goal||0) - thisWeekTotal);
   const t=todayISO();
   const winDone=!!todaysWins[t];
   const workoutsThisWeek = entries.filter(e=>e.date>=weekEpoch).length;
+  const workoutsLast30 = entries.filter(e=>(e.date||"")>=addDaysISO(t,-29)).length;
+  const uniqueWorkoutDaysThisWeek = new Set(entries.filter(e=>(e.date||"")>=weekEpoch).map(e=>(e.date||"").slice(0,10)).filter(Boolean)).size;
   const healthThisWeek = bpLog.filter(r=>r.date>=weekEpoch).length + hLog.filter(r=>r.date>=weekEpoch).length;
-  const reflectionsThisWeek = reflections.filter(r=>(r.week||r.date)>=weekEpoch).length;
-  const gratitudeThisWeek = gratitudeLog.filter(r=>r.date>=weekEpoch).length;
-  const journalThisWeek = journalLog.filter(r=>r.date>=weekEpoch).length;
-  const todayWorkouts = entries.filter(e=>(e.date||"").slice(0,10)===t).length;
-  const readiness = getTodayReadiness();
-  const readinessScore = readinessScoreFor(t);
+  const todaySummary = activitySummaryFor(t);
   const todayPlan = buildTodayPlan();
-  const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
-  const activeChallengeProgress = getChallengeProgress(activeChallenge);
-  const recentBadges = achievements.filter(a=>a.type==="challenge_badge").slice(0,3);
+  const challengeStats = get75HardStats();
   const records = computeRecords();
+  const currentWt = currentWeight();
+  const weightDelta = weightLost();
+  const weightGoalGap = weightToGoal();
+  const weightPct = weightProgress();
   const todaySlot = weeklyPlanLabel(t);
-  const nextSlot = weeklyPlanLabel(addDaysISO(t,1));
   const toneClass = planTone(todayPlan.label + " " + todaySlot);
-  const planDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const last14 = [];
   for(let i=13;i>=0;i--){
     const day = addDaysISO(t, -i);
-    const row = lwDays?.[day] || {};
-    last14.push({ day, count:Object.values(row).filter(Boolean).length, hasWorkout: entries.some(e=>(e.date||"").slice(0,10)===day) });
+    last14.push(Object.assign({day}, activitySummaryFor(day)));
   }
 
   const todayPlanButtons = todayPlan.actions.map(action=>`<button class="btn ${todayPlan.tone==="primary"?"primary":"soft"}" data-plan-action="${escapeAttr(action)}">${escapeHtml(action)}</button>`).join("");
-  const weekPlanHtml = planDays.map(day=>`<button class="day-pill ${day===dayKeyFromISO(t)?"active":""}" type="button" data-edit-plan="${day}"><strong>${day}</strong><span class="small">${escapeHtml(weeklyPlan[day] || "Open")}</span></button>`).join("");
   const calendarHtml = last14.map(day=>{
-    const css = `${day.count || day.hasWorkout ? "good" : "empty"} ${day.day===t ? "active" : ""}`.trim();
-    return `<div class="calendar-day ${css}"><div class="small">${day.day.slice(5)}</div><div class="badge-num">${day.count}</div><div class="small">${day.hasWorkout?"Workout":"-"}</div></div>`;
+    const css = `${day.hasAny ? "good" : "empty"} ${day.day===t ? "active" : ""}`.trim();
+    const label = day.hasWorkout ? "Workout" : (day.hasChallenge ? "Challenge" : (day.hasHealth ? "Health" : "-"));
+    return `<div class="calendar-day ${css}"><div class="small">${day.day.slice(5)}</div><div class="badge-num">${day.activeCount}</div><div class="small">${label}</div></div>`;
   }).join("");
-  const badgeHtml = recentBadges.length ? recentBadges.map(b=>`<div class="list-row soft"><div style="flex:1;"><div style="font-weight:600;">${escapeHtml(b.rewardName || "Badge")}</div><div class="small">${escapeHtml(b.badgeTier || "Bronze")} tier - ${escapeHtml(b.name || "Challenge")} - ${escapeHtml((b.completedAt||"").slice(0,10))}</div></div></div>`).join("") : '<div class="small">No challenge badges yet.</div>';
   wrap.innerHTML=`
     <div class="card hero-card">
       <div class="hero-head">
         <div>
-          <div class="hero-kicker">Momentum Today</div>
+          <div class="hero-kicker">🔥 Momentum Today</div>
           <h2 class="hero-title">${todayPlan.label}</h2>
-          <div class="small hero-sub">${todayPlan.text}</div>
+          <div class="small hero-sub">Keep progress visible, log honestly, and make consistency feel real.</div>
           <div class="hero-badges">
             <div class="pill ${toneClass}">Today plan: ${escapeHtml(todaySlot)}</div>
-            <div class="pill">Next up: ${escapeHtml(nextSlot)}</div>
-            <div class="pill">Weekly goal ${thisWeekTotal}/${goal}</div>
+            <div class="pill">${pointsLeft===0 ? "Goal in reach" : `${pointsLeft} pts left`}</div>
           </div>
         </div>
         <div class="score-pill">
-          <div class="small">Readiness</div>
-          <div class="big-score" style="margin:2px 0 0 0;">${readinessScore==null?"-":readinessScore}</div>
+          <div class="small">Weekly goal</div>
+          <div class="big-score" style="margin:2px 0 0 0;">${goal}</div>
         </div>
       </div>
-      <div class="quick-grid" style="margin-top:14px;">
-        <div class="stat-chip"><div class="row-between"><div>Workout</div><div class="badge-num">${todayWorkouts}</div></div><div class="small">Sessions today</div></div>
-        <div class="stat-chip"><div class="row-between"><div>Recovery</div><div class="badge-num">${readinessScore==null?"-":readinessScore}</div></div><div class="small">Energy ${readiness.energy||"-"} / Soreness ${readiness.soreness||"-"}</div></div>
-        <div class="stat-chip"><div class="row-between"><div>Record</div><div class="badge-num">${records.bestWeek.value || 0}</div></div><div class="small">Best week points</div></div>
-      </div>
-      <div class="hero-panel" style="margin-top:14px;">
-        <div class="section-title"><strong>Focus for today</strong><span class="pill ${toneClass}">${escapeHtml(todaySlot)}</span></div>
-        <div class="small" style="margin-top:8px;">Pick one useful thing, do it honestly, and let the day build from there.</div>
-        <div class="btn-row">${todayPlanButtons}</div>
-      </div>
-      <div class="fab-row">
-        <button class="btn primary" id="quickWorkoutBtn">Open workout</button>
-        <button class="btn primary" id="quickPlanBtn">Open plan</button>
-      </div>
-      <div class="btn-row sticky-actions" style="margin-top:10px;">
-        <button class="btn" id="openHistoryBtn">View history</button>
-        <button class="btn" id="todaysWinBtn">${winDone?"Shown up today":"I showed up today"}</button>
+      <div class="hero-grid tight">
+        <div class="hero-panel ring-card">
+          ${renderProgressRing("This week", thisWeekTotal, `of ${goal} pts`, pct, "Weekly progress")}
+        </div>
+        <div class="hero-panel">
+          <div class="stats-list">
+            <div class="stats-row">
+              <div>
+                <div class="stats-label">Sessions today</div>
+                <div class="stats-sub">Any workout counts</div>
+              </div>
+              <div class="stats-value">${todaySummary.workoutCount}</div>
+            </div>
+            <div class="stats-row">
+              <div>
+                <div class="stats-label">Challenge</div>
+                <div class="stats-sub">Checked off today</div>
+              </div>
+              <div class="stats-value">${challengeStats.doneToday}/${challengeStats.totalTasks}</div>
+            </div>
+            <div class="stats-row">
+              <div>
+                <div class="stats-label">Health logs</div>
+                <div class="stats-sub">This week</div>
+              </div>
+              <div class="stats-value">${healthThisWeek}</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="section-title"><h2 style="margin:0;">Weekly Plan</h2><span class="pill ${toneClass}">${escapeHtml(todaySlot)}</span></div>
-      <div class="small">Tap a day to rename its plan.</div>
-      <div class="week-plan">${weekPlanHtml}</div>
+      <h2>📣 Progress Snapshot</h2>
+      <div class="small" style="margin-top:12px;">Week, body, and consistency at a glance.</div>
+      <div class="summary-grid">
+        <div class="summary-stat">
+          <div class="summary-kicker">Workout days</div>
+          <div class="summary-value accent">${uniqueWorkoutDaysThisWeek}</div>
+          <div class="summary-note">Unique days trained this week</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-kicker">30-day sessions</div>
+          <div class="summary-value">${workoutsLast30}</div>
+          <div class="summary-note">Any logged workout counts</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-kicker">Current weight</div>
+          <div class="summary-value">${currentWt==null?"-":currentWt}</div>
+          <div class="summary-note">${currentWt==null?"No weigh-in yet":"Latest weigh-in"}</div>
+        </div>
+        <div class="summary-stat">
+          <div class="summary-kicker">To goal</div>
+          <div class="summary-value">${weightGoalGap==null?"-":weightGoalGap}</div>
+          <div class="summary-note">${weightGoalGap==null?"Set a weight goal in Health":"lb remaining"}</div>
+        </div>
+      </div>
+      ${weightPct==null ? '<div class="small" style="margin-top:12px;">Set a start weight and goal in Health to make body progress easier to review.</div>' : `<div class="small" style="margin-top:12px;">Weight goal progress: ${weightPct}% complete${weightDelta!=null ? ` | ${weightDelta} lb changed from start` : ""}</div><div class="progress-bg" style="margin-top:8px;"><div class="progress-fg" style="width:${weightPct}%;"></div></div>`}
     </div>
 
     <div class="card">
-      <h2>Focus Challenge</h2>
-      ${activeChallenge ? `<div class="row-between"><div style="font-weight:600;">${escapeHtml(activeChallenge.name || "Custom challenge")}</div><div class="badge-num">${activeChallengeProgress.value}/${activeChallengeProgress.target}</div></div><div class="small">${escapeHtml(activeChallengeProgress.label)}</div><div class="progress-bg"><div class="progress-fg" style="width:${activeChallengeProgress.pct}%;"></div></div><div class="btn-row"><button class="btn soft" id="manageChallengeBtn">Manage challenge</button></div>` : `<div class="small">No focus challenge pinned yet.</div><div class="btn-row"><button class="btn soft" id="manageChallengeBtn">Create one</button></div>`}
-    </div>
-
-    <div class="card">
-      <h2>Weekly Score <span class="subtle">(${weekEpoch} -> now)</span></h2>
+      <h2>🏆 Weekly Score <span class="subtle">(${weekEpoch} -> now)</span></h2>
       <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
       <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
       <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
-      <div class="btn-row" style="margin-top:12px;">
-        <button class="btn" id="editThemeBtn">Edit theme</button>
-        <button class="btn danger" id="resetWeeklyScoreBtn">Reset Weekly Score</button>
-      </div>
+      <div class="btn-row" style="margin-top:12px;"><button class="btn" id="editThemeBtn">Edit theme</button></div>
       <div id="themeEdit" class="hidden" style="margin-top:10px;">
         <input class="input" id="themeInput" value="${escapeAttr(monthTheme)}" />
         <button class="btn" id="saveThemeBtn">Save</button>
@@ -1541,93 +1945,18 @@ function renderOverview(){
     </div>
 
     <div class="card">
-      <h2>Consistency Calendar</h2>
-      <div class="small">Last 14 days of activity and workouts.</div>
-      <div class="calendar-strip">${calendarHtml}</div>
-    </div>
-
-    <div class="card">
-      <h2>Personal Records</h2>
+      <h2>🌟 Personal Records</h2>
       <div class="record-grid">
         <div class="record-card"><div class="small">Longest workout</div><div class="record-value">${records.longestWorkout.value || 0} min</div><div class="small">${escapeHtml(records.longestWorkout.label || "No workout yet")} ${records.longestWorkout.date ? `- ${records.longestWorkout.date}` : ""}</div></div>
         <div class="record-card"><div class="small">Most steps</div><div class="record-value">${records.mostSteps.value || 0}</div><div class="small">${records.mostSteps.date || "No step log yet"}</div></div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Recent Badges</h2>
-      ${badgeHtml}
-    </div>
-
-    <div class="card">
-      <h2>Breakdown</h2>
-      <div class="row-between"><div>Workout</div><div>${workoutPts} pts</div></div>
-      <div class="row-between"><div>Lifestyle</div><div>${lifestylePts} pts</div></div>
-      <div class="row-between"><div>Health</div><div>${healthPts} pts</div></div>
-      <div class="row-between"><div>Motivation</div><div>${motivationPts} pts</div></div>
-      <div class="row-between"><div>Bonus</div><div>${bonusPts} pts</div></div>
-    </div>
-
-    <div class="card">
-      <h2>Weekly Highlight Reel</h2>
-      <div class="small">Just the facts. You did more than you think.</div>
-      <div class="list-row"><div style="flex:1;">Workouts logged</div><div class="badge-num">${workoutsThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">Health entries</div><div class="badge-num">${healthThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">Gratitude notes</div><div class="badge-num">${gratitudeThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">Journal entries</div><div class="badge-num">${journalThisWeek}</div></div>
-      <div class="list-row"><div style="flex:1;">Reflections</div><div class="badge-num">${reflectionsThisWeek}</div></div>
-    </div>
-
-    <div class="card">
-      <h2>Recovery Check</h2>
-      <div class="mini-grid">
-        <label class="small">Energy<select class="input" id="todayEnergy">${[1,2,3,4,5].map(n=>`<option value="${n}" ${Number(readiness.energy)===n?"selected":""}>${n}</option>`).join("")}</select></label>
-        <label class="small">Soreness<select class="input" id="todaySoreness">${[1,2,3,4,5].map(n=>`<option value="${n}" ${Number(readiness.soreness)===n?"selected":""}>${n}</option>`).join("")}</select></label>
-        <label class="small">Sleep<input class="input" id="todaySleep" inputmode="decimal" value="${escapeAttr(readiness.sleep||"")}" placeholder="7.5"></label>
-      </div>
-      <textarea class="input" id="todayRecoveryNote" placeholder="Short note for today">${escapeHtml(readiness.note||"")}</textarea>
-      <button class="btn" id="saveRecoveryBtn">Save recovery</button>
-    </div>
-
-    <div class="card">
-      <h2>Reminders & Safety</h2>
-      <div class="small">Installed HTML apps on Android can nudge you when the app is opened and notification permission is granted. Fully offline scheduled alarms need a native app wrapper.</div>
-      <div class="mini-grid" style="margin-top:12px;">
-        <label class="small">Reminder<select class="input" id="reminderEnabled"><option value="off" ${!reminderSettings.enabled?"selected":""}>Off</option><option value="on" ${reminderSettings.enabled?"selected":""}>On</option></select></label>
-        <label class="small">Time<input class="input" id="reminderTime" type="time" value="${escapeAttr(reminderSettings.time||"19:00")}"></label>
-        <div class="stat-chip"><div class="row-between"><div>Backup</div><div class="badge-num">${lastBackupExport?.date || "Never"}</div></div><div class="small">Use Export data after big updates.</div></div>
-      </div>
-      <div class="btn-row"><button class="btn" id="saveReminderBtn">Save reminder</button><button class="btn soft" id="enableNotifBtn">Enable notifications</button></div>
-    </div>
   `;
 
-  wrap.querySelector("#resetWeeklyScoreBtn").onclick=()=>{hardResetWeeklyScore();};
-  wrap.querySelector("#todaysWinBtn").onclick=()=>{
-    todaysWins[t]=true;
-    persist();
-    showToast(compliment());
-    renderOverview();
-  };
-  wrap.querySelector("#quickWorkoutBtn").onclick=()=>openPlan("train");
-  wrap.querySelector("#quickPlanBtn").onclick=()=>showScreen("plan");
-  wrap.querySelector("#openHistoryBtn").onclick=()=>showScreen("history");
-  wrap.querySelector("#manageChallengeBtn").onclick=()=>openPlan("challenge");
   wrap.querySelectorAll("[data-plan-action]").forEach(btn=>{
     btn.onclick=()=>{
-      const action = btn.getAttribute("data-plan-action") || "";
-      openPlan("train");
-    };
-  });
-  wrap.querySelectorAll("[data-edit-plan]").forEach(btn=>{
-    btn.onclick=()=>{
-      const day = btn.getAttribute("data-edit-plan") || "Mon";
-      const current = weeklyPlan[day] || "Open";
-      const next = prompt(`Plan for ${day}`, current);
-      if(next === null) return;
-      weeklyPlan[day] = (next || "Open").trim() || "Open";
-      persist();
-      showToast(`${day} plan saved`);
-      renderOverview();
+      showScreen("workout");
     };
   });
 
@@ -1638,35 +1967,6 @@ function renderOverview(){
     monthTheme = wrap.querySelector("#themeInput").value.trim() || monthTheme;
     persist();
     showToast("Saved");
-    renderOverview();
-  };
-  wrap.querySelector("#saveRecoveryBtn").onclick=()=>{
-    readinessLog[t] = {
-      energy:Number(wrap.querySelector("#todayEnergy").value)||3,
-      soreness:Number(wrap.querySelector("#todaySoreness").value)||3,
-      sleep:(wrap.querySelector("#todaySleep").value||"").trim(),
-      note:(wrap.querySelector("#todayRecoveryNote").value||"").trim()
-    };
-    persist();
-    showToast("Recovery saved");
-    renderOverview();
-  };
-  wrap.querySelector("#saveReminderBtn").onclick=()=>{
-    reminderSettings.enabled = wrap.querySelector("#reminderEnabled").value === "on";
-    reminderSettings.time = wrap.querySelector("#reminderTime").value || "19:00";
-    if("Notification" in window) reminderSettings.permission = Notification.permission;
-    persist();
-    showToast("Reminder settings saved");
-  };
-  wrap.querySelector("#enableNotifBtn").onclick=async ()=>{
-    if(!("Notification" in window)){
-      showToast("Notifications are not supported here");
-      return;
-    }
-    const result = await Notification.requestPermission();
-    reminderSettings.permission = result;
-    persist();
-    showToast(result === "granted" ? "Notifications enabled" : "Notification permission not granted");
     renderOverview();
   };
 
@@ -1690,6 +1990,7 @@ function renderHealth(){
     
 <div class="card">
   <h2>Weight Goal</h2>
+  <div class="small">Set the starting point and target so progress is easy to review over time.</div>
   <label class="input-label">Starting weight (lb)</label>
   <input class="input" id="wsInput" inputmode="decimal" value="${weightStart??""}"/>
   <label class="input-label">Goal weight (lb)</label>
@@ -1724,6 +2025,7 @@ function renderHealth(){
 <div class="card" id="health-weight-card">
 
       <h2>Health - Weight & Body Comp</h2>
+      <div class="small">Use this for simple check-ins and weight trend tracking.</div>
       <label class="input-label">Date</label>
       <input class="input" id="wDate" type="date" value="${todayISO()}"/>
       <label class="input-label">Weight (lb)</label>
@@ -1732,12 +2034,10 @@ function renderHealth(){
        <input class="input" id="wLBM" inputmode="decimal"/>
       <label class="input-label">Body Fat (%)</label>
       <input class="input" id="wFat" inputmode="decimal"/>
-      <label class="input-label">Muscle (%)</label>
-      <input class="input" id="wMuscle" inputmode="decimal"/>
-      <button class="btn" id="saveHealth">Save to Log</button>
+       <button class="btn" id="saveHealth">Save check-in</button>
 
       <div class="row-between" style="margin-top:16px;">
-        <div class="row-left">Health Log (last 4)</div>
+        <div class="row-left">Recent check-ins</div>
         <div class="row-right"><button class="btn" id="dlWeightCsvBtn">Download CSV</button></div>
       </div>
       ${
@@ -1745,7 +2045,7 @@ function renderHealth(){
         ? last4H.map(r=>`
           <div class="list-row">
             <div style="flex:1;">
-               ${r.date} - ${r.weight||""}lb - ${r.lbm?("LBM "+r.lbm+"lb - "):""}${r.bodyfat||""}% - ${r.muscle||""}%
+               ${r.date} - ${r.weight||""}lb - ${r.lbm?("LBM "+r.lbm+"lb - "):""}${r.bodyfat||""}%
             </div>
             <div class="del" data-del-health="${r.id}">Delete</div>
           </div>`).join("")
@@ -1755,6 +2055,7 @@ function renderHealth(){
 
     <div class="card" id="health-bp-card">
       <h2>BP Log</h2>
+      <div class="small">Optional, but useful if you want a bigger picture of health progress alongside workouts and weight.</div>
       <label class="input-label">Date</label>
       <input class="input" id="bpDate" type="date" value="${todayISO()}"/>
       <label class="input-label">Systolic</label>
@@ -1766,7 +2067,7 @@ function renderHealth(){
         <option value="false">No</option>
         <option value="true">Yes</option>
       </select>
-      <button class="btn" id="saveBP">Save to Log</button>
+      <button class="btn" id="saveBP">Save BP check-in</button>
       <div class="small" style="margin-top:8px;">${avgBP}</div>
 
       <div class="row-between" style="margin-top:16px;">
@@ -1809,7 +2110,6 @@ function renderHealth(){
       weight:wrap.querySelector("#wWeight").value.trim(),
        lbm:wrap.querySelector("#wLBM").value.trim(),
       bodyfat:wrap.querySelector("#wFat").value.trim(),
-      muscle:wrap.querySelector("#wMuscle").value.trim()
     };
     hLog=[rec,...hLog].slice(0,120);
 
@@ -1849,8 +2149,8 @@ function renderHealth(){
   const dlW = wrap.querySelector("#dlWeightCsvBtn");
   if(dlW){
     dlW.onclick=()=>{
-      const rows = [["date","weight_lb","lean_body_mass_lb","body_fat_pct","muscle_pct"]]
-        .concat((hLog||[]).slice().reverse().map(r=>[r.date||"", r.weight||"", r.lbm||"", r.bodyfat||"", r.muscle||""]));
+      const rows = [["date","weight_lb","lean_body_mass_lb","body_fat_pct"]]
+        .concat((hLog||[]).slice().reverse().map(r=>[r.date||"", r.weight||"", r.lbm||"", r.bodyfat||""]));
       downloadCSV(`momentum_weight_log_${todayISO()}.csv`, rows);
     };
   }
@@ -2013,7 +2313,7 @@ function renderLifestyle(){
         const row=lwDays?.[d]||{};
         const c=HABITS.reduce((s,h)=>s+(row[h.key]?1:0),0);
         const isSel = d===selectedDate;
-        return `<div class="list-row" style="${isSel ? "background:rgba(16,185,129,.08);padding:8px 10px;border-radius:12px;" : ""}">
+        return `<div class="list-row" style="${isSel ? "background:rgba(47,159,150,.14);padding:8px 10px;border-radius:12px;" : ""}">
           <div style="flex:1;">${dayLabels[i]} - ${d}</div>
           <div class="badge-num">${c}</div>
         </div>`;
@@ -2108,30 +2408,33 @@ function renderWorkout(){
 
   const monthList = [
     `Swing Storm: ${monthlyProg.swings||0}/1000 swings`,
-    `Emerald Century: ${Math.round((monthlyProg.cyclingKm||0) + (monthlyProg.walkKm||0))}/100 km`,
-    `Mobility stack: ${monthlyProg.mobilitySessions||0}/8 sessions`
+    `💚 Emerald Century: ${Math.round((monthlyProg.cyclingKm||0) + (monthlyProg.walkKm||0))}/100 km`,
+    `🧘 Mobility stack: ${monthlyProg.mobilitySessions||0}/8 sessions`
   ];
   const weekList = [
-    `Strength block: ${weeklyProg.strengthSessions||0}/3 sessions`,
-    `Cardio engine: ${weeklyProg.cardioSessions||0}/3 sessions`,
-    `Step surge: ${weeklyProg.steps||0}/90000 steps`
+    `🏋️ Strength block: ${weeklyProg.strengthSessions||0}/3 sessions`,
+    `❤️ Cardio engine: ${weeklyProg.cardioSessions||0}/3 sessions`,
+    `👟 Step surge: ${weeklyProg.steps||0}/90000 steps`
   ];
   const weekendList = [
-    `Weekend movement: ${Math.round(weekendProg.distanceKm||0)}/8 km`,
-    `Weekend reset: ${weekendProg.yogaSessions||0}/2 mobility sessions`,
-    `Weekend push: ${weekendProg.reps||0}/200 reps`
+    `🌄 Weekend movement: ${Math.round(weekendProg.distanceKm||0)}/8 km`,
+    `🧘 Weekend mobility: ${weekendProg.yogaSessions||0}/2 sessions`,
+    `⚡ Weekend push: ${weekendProg.reps||0}/200 reps`
   ];
+  const challengeStartDefault = firstDayOfMonthISO(todayISO());
+  const challengeEndDefault = lastDayOfMonthISO(todayISO());
+  const workoutWeekPoints = entries.filter(e=>e.date>=weekEpoch && e.date<addDaysISO(weekEpoch,7)).reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0);
+  const workoutWeekPct = Math.min(100, Math.round((workoutWeekPoints / (goal||1)) * 100));
+  const strengthWeek = weeklyProg.strengthSessions||0;
+  const cardioWeek = weeklyProg.cardioSessions||0;
+  const stepsWeek = weeklyProg.steps||0;
+  const strengthPct = Math.min(100, Math.round((strengthWeek / 3) * 100));
+  const cardioPct = Math.min(100, Math.round((cardioWeek / 3) * 100));
+  const stepsPct = Math.min(100, Math.round((stepsWeek / 90000) * 100));
   const recentEntries = entries.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,30);
   const records = computeRecords();
   const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
   const activeChallengeProgress = getChallengeProgress(activeChallenge);
-  const challengeIdeas = [
-    "Spring streak - 7 active days in the next 7.",
-    "Iron week - 4 strength sessions this week.",
-    "Step surge - 90k or 105k steps this week.",
-    "Recovery reset - 3 mobility sessions this week.",
-    "Beat last week - top your last workout-point total."
-  ];
   const compareHtml = (()=>{
     const thisWeekKey = weekEpoch;
     const lastWeekKey = addDaysISO(thisWeekKey,-7);
@@ -2157,48 +2460,98 @@ function renderWorkout(){
     `;
   })();
 
-  function sectionChallenges(title, items, resetId){
-    return `
-      <div class="card">
-        <div class="section-title">
-          <h2 style="margin:0;">${title}</h2>
-          <button class="btn danger" id="${resetId}">Reset</button>
-        </div>
-        ${items.map(item=>`<div class="list-row soft"><div style="flex:1;">${item}</div></div>`).join("")}
-      </div>
-    `;
-  }
-
   wrap.innerHTML=`
     <div class="card hero-card">
-      <div class="hero-head">
-        <div>
+      <div class="hero-split">
+        <div class="hero-copy">
           <div class="hero-kicker">Workout Builder</div>
           <h2 class="hero-title">Train fast, log faster</h2>
-          <div class="small hero-sub">Use presets, templates, and challenges so logging on Android feels like two taps, not a chore.</div>
+          <div class="small hero-sub">Log any workout that actually happened, keep the friction low, and let the weekly goal live in the score.</div>
+          <div class="hero-meta">
+            <div class="hero-mini">
+              <div class="hero-mini-label">Weekly goal</div>
+              <div class="hero-mini-value">${goal} pts</div>
+              <div class="hero-mini-sub">${Math.max(0, goal - workoutWeekPoints)} left</div>
+            </div>
+            <div class="hero-mini">
+              <div class="hero-mini-label">This week</div>
+              <div class="hero-mini-value">${workoutWeekPoints} pts</div>
+              <div class="hero-mini-sub">${workoutWeekPct}% complete</div>
+            </div>
+          </div>
         </div>
-        <div class="score-pill">
-          <div class="small">Weekly goal</div>
-          <div class="big-score" style="margin:2px 0 0 0;">${goal}</div>
+        <div class="hero-panel ring-card">
+          ${renderProgressRing("This week", workoutWeekPoints, `of ${goal} pts`, workoutWeekPct, "Workout score")}
         </div>
       </div>
-      <div class="hero-grid">
-        <div class="hero-panel">
-          <div class="small">Today is planned for</div>
-          <div class="record-value">${escapeHtml(weeklyPlanLabel(todayISO()))}</div>
-          <div class="small">Tomorrow: ${escapeHtml(weeklyPlanLabel(addDaysISO(todayISO(),1)))}</div>
+    </div>
+
+    <div class="card">
+      <h2>Workout Snapshot</h2>
+      <div class="stats-list">
+        <div class="stats-row">
+          <div>
+            <div class="stats-label">Training focus</div>
+            <div class="stats-sub">What today points toward</div>
+          </div>
+          <div class="stats-value">${escapeHtml(weeklyPlanLabel(todayISO()))}</div>
         </div>
-        <div class="hero-panel">
-          <div class="small">Current focus challenge</div>
-          <div style="font-weight:600;margin-top:8px;">${escapeHtml(activeChallenge?.name || "None active")}</div>
-          <div class="small">${activeChallenge ? `${escapeHtml(activeChallengeProgress.label)} - ${activeChallengeProgress.value}/${activeChallengeProgress.target}` : "Pin a challenge below to keep today sharp."}</div>
+        <div class="stats-row">
+          <div>
+            <div class="stats-label">Current challenge</div>
+            <div class="stats-sub">${activeChallenge ? escapeHtml(activeChallenge?.name || "Challenge") : "No active challenge"}</div>
+          </div>
+          <div class="stats-value">${activeChallenge ? `${Math.round(activeChallengeProgress.pct)}%` : "-"}</div>
+        </div>
+        <div class="stats-row">
+          <div>
+            <div class="stats-label">Tomorrow</div>
+            <div class="stats-sub">Next training cue</div>
+          </div>
+          <div class="stats-value">${escapeHtml(weeklyPlanLabel(addDaysISO(todayISO(),1)))}</div>
+        </div>
+      </div>
+      <div class="visual-stack">
+        <div class="visual-card">
+          <div class="bar-meter">
+            <div class="bar-meter-head">
+              <div class="bar-meter-title">Strength</div>
+              <div class="bar-meter-value">${strengthWeek}/3</div>
+            </div>
+            <div class="bar-meter-sub">Sessions this week</div>
+            <div class="progress-bg"><div class="progress-fg" style="width:${strengthPct}%;"></div></div>
+          </div>
+          <div class="bar-meter">
+            <div class="bar-meter-head">
+              <div class="bar-meter-title">Cardio</div>
+              <div class="bar-meter-value">${cardioWeek}/3</div>
+            </div>
+            <div class="bar-meter-sub">Sessions this week</div>
+            <div class="progress-bg"><div class="progress-fg" style="width:${cardioPct}%;"></div></div>
+          </div>
+          <div class="bar-meter">
+            <div class="bar-meter-head">
+              <div class="bar-meter-title">Steps</div>
+              <div class="bar-meter-value">${stepsWeek}</div>
+            </div>
+            <div class="bar-meter-sub">Toward 90,000 this week</div>
+            <div class="progress-bg"><div class="progress-fg" style="width:${stepsPct}%;"></div></div>
+          </div>
+        </div>
+        <div class="mini-rings">
+          <div class="mini-ring">
+            ${renderProgressRing("Strength", strengthWeek, "sessions", strengthPct, "")}
+          </div>
+          <div class="mini-ring">
+            ${renderProgressRing("Cardio", cardioWeek, "sessions", cardioPct, "")}
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
       <div class="section-title">
-        <h2 style="margin:0;">Compare</h2>
+        <h2 style="margin:0;">Coach Scoreboard</h2>
         <label class="small">Weekly goal <input class="input" id="goalInput" value="${goal}" inputmode="numeric" style="max-width:110px;margin:8px 0 0 0;"></label>
       </div>
       ${compareHtml}
@@ -2206,13 +2559,13 @@ function renderWorkout(){
 
     <div class="card">
       <h2>Add Workout</h2>
-      <div class="small">Quick presets for the sessions you log most on your phone.</div>
+      <div class="small">Any workout style works here: gym, classes, walks, runs, circuits, sports, or custom sessions.</div>
       <div class="quick-grid" style="margin:12px 0 14px 0;">
         ${WORKOUT_PRESETS.map((preset, idx)=>`<button class="btn soft" type="button" data-preset="${idx}">${preset.label}</button>`).join("")}
       </div>
       <label class="input-label">Date</label>
       <input class="input" id="wDate" type="date" value="${todayISO()}"/>
-      <label class="input-label">Category</label>
+      <label class="input-label">Workout type</label>
       <select class="input" id="wCatSelect">
         <option value="Steps">Steps</option>
         <option value="Kettlebell">Kettlebell</option>
@@ -2228,8 +2581,8 @@ function renderWorkout(){
         <option value="Other">Other...</option>
       </select>
       <div id="wCatOtherWrap" class="hidden">
-        <label class="input-label">Custom category</label>
-        <input class="input" id="wCatOther" placeholder="Type your category"/>
+        <label class="input-label">Custom workout name</label>
+        <input class="input" id="wCatOther" placeholder="Example: Boxing, Pilates, Tennis, Upper Body"/>
       </div>
       <div id="wStepsWrap" class="hidden">
         <label class="input-label">Steps</label>
@@ -2246,33 +2599,26 @@ function renderWorkout(){
         <label class="small">Total reps<input class="input" id="wReps" inputmode="numeric"/></label>
         <label class="small">Circuit exercises<input class="input" id="wCircuitEx" inputmode="numeric"/></label>
       </div>
-      <label class="input-label">Notes</label>
-      <textarea class="input" id="wNotes"></textarea>
       <div class="fab-row">
         <button class="btn primary" id="addWorkoutBtn">Add Workout</button>
-        <button class="btn soft" id="saveTemplateBtn">Save as template</button>
       </div>
     </div>
 
-    ${sectionChallenges("Monthly Challenges", monthList,"resetMonthlyBtn")}
-    ${sectionChallenges("Weekly Challenges", weekList,"resetWeeklyChalBtn")}
-    ${sectionChallenges("Weekend Warrior", weekendList,"resetWeekendBtn")}
-
     <div class="card">
-      <h2>Custom Challenge</h2>
+      <h2>Challenge</h2>
       ${activeChallenge ? `
-        <div class="row-between">
-          <div style="font-weight:600;">${escapeHtml(activeChallenge.name || "Custom challenge")}</div>
-          <div class="badge-num">${activeChallengeProgress.value}/${activeChallengeProgress.target}</div>
-        </div>
-        <div class="small">${escapeHtml(activeChallengeProgress.label)}</div>
+        <div style="font-weight:600;">${escapeHtml(activeChallenge.name || "Challenge")}</div>
+        <div class="small" style="margin-top:6px;">${escapeHtml(activeChallengeProgress.summary)}</div>
+        <div class="small">${escapeHtml(activeChallengeProgress.rangeLabel)}${activeChallengeProgress.pace ? ` | ${escapeHtml(activeChallengeProgress.pace)}` : ""}${activeChallengeProgress.pace && activeChallengeProgress.pace!=="Done" ? ` | ${activeChallengeProgress.daysLeft} days left` : ""}</div>
         <div class="progress-bg"><div class="progress-fg" style="width:${activeChallengeProgress.pct}%;"></div></div>
         <div class="btn-row"><button class="btn danger" id="clearActiveChallengeBtn">Clear active</button></div>
-      ` : '<div class="small">No active custom challenge yet.</div>'}
+      ` : '<div class="small">No active challenge yet.</div>'}
       <div class="mini-grid" style="margin-top:12px;">
-        <label class="small">Name<input class="input" id="customChallengeName" placeholder="Spring streak"></label>
+        <label class="small">Name<input class="input" id="customChallengeName" placeholder="Example: Ride 150 miles in May"></label>
         <label class="small">Metric<select class="input" id="customChallengeMetric">${Object.entries(CHALLENGE_METRICS).map(([key, meta])=>`<option value="${key}">${escapeHtml(meta.label)}</option>`).join("")}</select></label>
-        <label class="small">Target<input class="input" id="customChallengeTarget" inputmode="numeric" placeholder="5"></label>
+        <label class="small">Target<input class="input" id="customChallengeTarget" inputmode="numeric" placeholder="150"></label>
+        <label class="small">Start<input class="input" id="customChallengeStart" type="date" value="${challengeStartDefault}"></label>
+        <label class="small">End<input class="input" id="customChallengeEnd" type="date" value="${challengeEndDefault}"></label>
       </div>
       <div class="btn-row"><button class="btn" id="saveCustomChallengeBtn">Save challenge</button></div>
       ${customChallenges.length ? `
@@ -2283,7 +2629,8 @@ function renderWorkout(){
             return `<div class="list-row soft">
               <div style="flex:1;">
                 <div style="font-weight:600;">${escapeHtml(ch.name || "Challenge")}${isActive ? ' <span class="badge-num">Active</span>' : ""}</div>
-                <div class="small">${escapeHtml(prog.label)} - ${prog.value}/${prog.target}</div>
+                <div class="small">${escapeHtml(prog.summary)}</div>
+                <div class="small">${escapeHtml(prog.rangeLabel)}${prog.pace ? ` | ${escapeHtml(prog.pace)}` : ""}</div>
               </div>
               <div class="btn-row" style="margin-top:0;">
                 <button class="btn soft" type="button" data-activate-challenge="${ch.id}">Use</button>
@@ -2296,26 +2643,7 @@ function renderWorkout(){
     </div>
 
     <div class="card">
-      <h2>Templates</h2>
-      <div class="small">Save your common sessions and reuse them with one tap.</div>
-      ${workoutTemplates.length ? `
-        <div class="quick-grid" style="margin-top:12px;">
-          ${workoutTemplates.map((tpl, idx)=>`<button class="btn soft" type="button" data-template="${idx}">${escapeHtml(tpl.name || ("Template " + (idx+1)))}</button>`).join("")}
-        </div>
-        <div style="margin-top:10px;">
-          ${workoutTemplates.map((tpl, idx)=>`<div class="list-row soft"><div style="flex:1;">${escapeHtml(tpl.name || ("Template " + (idx+1)))}</div><button class="btn danger" type="button" data-del-template="${idx}">Delete</button></div>`).join("")}
-        </div>
-      ` : '<div class="small" style="margin-top:10px;">No custom templates yet.</div>'}
-    </div>
-
-    <div class="card">
-      <h2>Challenge Ideas</h2>
-      <div class="small">A few stronger challenge directions for this version of the app.</div>
-      ${challengeIdeas.map(item=>`<div class="list-row soft"><div style="flex:1;">${item}</div></div>`).join("")}
-    </div>
-
-    <div class="card">
-      <h2>Workout Records</h2>
+      <h2>Workout Progress Markers</h2>
       <div class="record-grid">
         <div class="record-card">
           <div class="small">Longest workout</div>
@@ -2331,7 +2659,7 @@ function renderWorkout(){
     </div>
 
     <div class="card">
-      <h2>Your Workouts <span class="small">(last 30 days)</span></h2>
+      <h2>Workout Log <span class="small">(last 30 days)</span></h2>
       ${
         recentEntries.length===0
         ? '<div class="small">No workouts in the past 30 days.</div>'
@@ -2404,43 +2732,7 @@ function renderWorkout(){
       wrap.querySelector("#wPushups").value = preset.pushups || "";
       wrap.querySelector("#wReps").value = preset.reps || "";
       wrap.querySelector("#wCircuitEx").value = preset.circuitEx || "";
-      wrap.querySelector("#wNotes").value = preset.notes || "";
       showToast(`${preset.label} loaded`);
-    };
-  });
-
-  wrap.querySelectorAll("[data-template]").forEach(btn=>{
-    btn.onclick=()=>{
-      const tpl = workoutTemplates[Number(btn.getAttribute("data-template"))];
-      if(!tpl) return;
-      wrap.querySelector("#wDate").value = todayISO();
-      if(catSel){
-        catSel.value = tpl.category || "Strength";
-        catSel.onchange();
-      }
-      if(wrap.querySelector("#wSteps")) wrap.querySelector("#wSteps").value = tpl.steps || "";
-      wrap.querySelector("#wDur").value = tpl.duration || "";
-      wrap.querySelector("#wKm").value = tpl.km || "";
-      wrap.querySelector("#wMiles").value = tpl.miles || "";
-      wrap.querySelector("#wFloors").value = tpl.floors || "";
-      wrap.querySelector("#wSwings").value = tpl.swings || "";
-      wrap.querySelector("#wPlank").value = tpl.plank || "";
-      wrap.querySelector("#wPushups").value = tpl.pushups || "";
-      wrap.querySelector("#wReps").value = tpl.reps || "";
-      wrap.querySelector("#wCircuitEx").value = tpl.circuitEx || "";
-      wrap.querySelector("#wNotes").value = tpl.notes || "";
-      if(tpl.category === "Other" && wrap.querySelector("#wCatOther")) wrap.querySelector("#wCatOther").value = tpl.customCategory || "";
-      showToast(`${tpl.name || "Template"} loaded`);
-    };
-  });
-
-  wrap.querySelectorAll("[data-del-template]").forEach(btn=>{
-    btn.onclick=()=>{
-      const idx = Number(btn.getAttribute("data-del-template"));
-      workoutTemplates = workoutTemplates.filter((_, i)=>i!==idx);
-      persist();
-      showToast("Template removed");
-      renderWorkout();
     };
   });
 
@@ -2455,13 +2747,15 @@ function renderWorkout(){
 
   wrap.querySelector("#saveCustomChallengeBtn").onclick=()=>{
     const name = (wrap.querySelector("#customChallengeName").value||"").trim();
-    const metric = wrap.querySelector("#customChallengeMetric").value || "workout_points_week";
+    const metric = wrap.querySelector("#customChallengeMetric").value || "workout_points";
     const target = Number(wrap.querySelector("#customChallengeTarget").value)||0;
-    if(!name || !target){
-      showToast("Add a name and target");
+    const startDate = (wrap.querySelector("#customChallengeStart").value||challengeStartDefault).trim();
+    const endDate = (wrap.querySelector("#customChallengeEnd").value||challengeEndDefault).trim();
+    if(!name || !target || !startDate || !endDate){
+      showToast("Add name, target, and dates");
       return;
     }
-    const challenge = {id:uid(), name, metric, target};
+    const challenge = {id:uid(), name, metric, target, startDate, endDate};
     customChallenges = [challenge, ...customChallenges].slice(0, 12);
     activeChallengeId = challenge.id;
     maybeCompleteCustomChallenge();
@@ -2519,35 +2813,9 @@ function renderWorkout(){
       pushups:wrap.querySelector("#wPushups").value.trim(),
       reps:wrap.querySelector("#wReps").value.trim(),
       circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
-      notes:wrap.querySelector("#wNotes").value.trim()
+      notes:""
     };
     addWorkoutRecord(rec);
-    renderWorkout();
-  };
-
-  wrap.querySelector("#saveTemplateBtn").onclick=()=>{
-    const category = wrap.querySelector("#wCatSelect").value || "Strength";
-    const customCategory = (wrap.querySelector("#wCatOther")?.value || "").trim();
-    const baseName = category === "Other" ? (customCategory || "Custom workout") : category;
-    const template = {
-      name:`${baseName} template`,
-      category,
-      customCategory,
-      steps:(wrap.querySelector("#wSteps")?.value||"").trim(),
-      duration:wrap.querySelector("#wDur").value.trim(),
-      km:wrap.querySelector("#wKm").value.trim(),
-      miles:wrap.querySelector("#wMiles").value.trim(),
-      floors:wrap.querySelector("#wFloors").value.trim(),
-      swings:wrap.querySelector("#wSwings").value.trim(),
-      plank:wrap.querySelector("#wPlank").value.trim(),
-      pushups:wrap.querySelector("#wPushups").value.trim(),
-      reps:wrap.querySelector("#wReps").value.trim(),
-      circuitEx:wrap.querySelector("#wCircuitEx").value.trim(),
-      notes:wrap.querySelector("#wNotes").value.trim()
-    };
-    workoutTemplates = [template, ...workoutTemplates].slice(0, 12);
-    persist();
-    showToast("Template saved");
     renderWorkout();
   };
 
@@ -2561,10 +2829,6 @@ function renderWorkout(){
       renderWorkout();
     };
   });
-
-  wrap.querySelector("#resetMonthlyBtn").onclick=()=>{ resetMonthly(); };
-  wrap.querySelector("#resetWeeklyChalBtn").onclick=()=>{ resetWeeklyChal(); };
-  wrap.querySelector("#resetWeekendBtn").onclick=()=>{ resetWeekend(); };
 
   const backupText = wrap.querySelector("#backupText");
   const exportBtn = wrap.querySelector("#exportDataBtn");
@@ -2620,9 +2884,10 @@ function render75Hard(){
   const wrap=document.getElementById("screen-75hard");
   if(!wrap) return;
   const today = todayISO();
+  const selectedDay = window._challengeDate || today;
   const tasks = hard75TaskDefs();
   const stats = get75HardStats();
-  const entry = get75HardEntry(today);
+  const entry = get75HardEntry(selectedDay);
   const recentDays = [];
   for(let i=0;i<7;i++){
     const day = addDaysISO(today, -i);
@@ -2635,7 +2900,7 @@ function render75Hard(){
     <div class="card hero-card">
       <div class="hero-head">
         <div>
-          <div class="hero-kicker">Challenge</div>
+          <div class="hero-kicker">🎯 Challenge</div>
           <h2 class="hero-title">${stats.started ? `Day ${Math.min(stats.daysInto, 75)} of 75` : "Start your reset"}</h2>
           <div class="small hero-sub">Track a structured discipline challenge with goals you can shape to fit your life.</div>
         </div>
@@ -2647,24 +2912,24 @@ function render75Hard(){
       <div class="quick-grid" style="margin-top:14px;">
         <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${stats.doneToday}/${stats.totalTasks}</div></div><div class="small">Tasks checked</div></div>
         <div class="stat-chip"><div class="row-between"><div>Streak</div><div class="badge-num">${stats.streak}</div></div><div class="small">Completed days in a row</div></div>
-        <div class="stat-chip"><div class="row-between"><div>Start</div><div class="badge-num">${stats.started ? stats.start.slice(5) : "--"}</div></div><div class="small">Challenge start date</div></div>
+        <div class="stat-chip"><div class="row-between"><div>Date</div><div class="badge-num">${selectedDay.slice(5)}</div></div><div class="small">Editing this day</div></div>
         <div class="stat-chip"><div class="row-between"><div>Progress</div><div class="badge-num">${stats.percent}%</div></div><div class="small">${stats.completedDays}/75 full days</div></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Plan Setup</h2>
-      <label class="input-label">Start date</label>
-      <input class="input" id="hard75Start" type="date" value="${escapeAttr(hard75.startDate || today)}">
+      <h2>🗓️ Date</h2>
+      <label class="input-label">Challenge date</label>
+      <input class="input" id="hard75Date" type="date" value="${escapeAttr(selectedDay)}">
       <div class="btn-row">
-        <button class="btn primary" id="save75StartBtn">${stats.started ? "Update start" : "Start plan"}</button>
+        <button class="btn primary" id="save75DateBtn">Open date</button>
         <button class="btn danger" id="reset75Btn">Reset plan</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>Today's Checklist</h2>
-      <div class="small">Check each item when it feels honestly complete for ${today}.</div>
+      <h2>✅ Daily Checklist</h2>
+      <div class="small">Check each item when it feels honestly complete for ${selectedDay}.</div>
       ${tasks.map(task=>`
         <label class="list-row soft" style="align-items:center;">
           <div style="flex:1;">${task.label}</div>
@@ -2672,14 +2937,14 @@ function render75Hard(){
         </label>
       `).join("")}
       <label class="input-label" style="margin-top:10px;">Daily note</label>
-      <textarea class="input" id="hard75Note" placeholder="What felt strong today?">${escapeHtml(entry.notes || "")}</textarea>
+      <textarea class="input" id="hard75Note" placeholder="What felt strong that day?">${escapeHtml(entry.notes || "")}</textarea>
       <div class="btn-row">
         <button class="btn" id="save75NoteBtn">Save note</button>
       </div>
     </div>
 
     <div class="card">
-      <h2>Your Goals</h2>
+      <h2>🧩 Your Goals</h2>
       <div class="small">Customize this checklist so it matches the kind of challenge you actually want to keep.</div>
       ${tasks.map(task=>`
         <div class="list-row soft">
@@ -2694,7 +2959,7 @@ function render75Hard(){
     </div>
 
     <div class="card">
-      <h2>Last 7 Days</h2>
+      <h2>📆 Last 7 Days</h2>
       ${recentDays.map(day=>`
         <div class="list-row soft">
           <div style="flex:1;">
@@ -2707,14 +2972,17 @@ function render75Hard(){
     </div>
   `;
 
-  wrap.querySelector("#save75StartBtn").onclick=()=>{
-    hard75.startDate = wrap.querySelector("#hard75Start").value || today;
-    persist();
-    showToast("Challenge start saved");
+  wrap.querySelector("#save75DateBtn").onclick=()=>{
+    window._challengeDate = wrap.querySelector("#hard75Date").value || today;
+    render75Hard();
+  };
+  wrap.querySelector("#hard75Date").onchange=()=>{
+    window._challengeDate = wrap.querySelector("#hard75Date").value || today;
     render75Hard();
   };
   wrap.querySelector("#reset75Btn").onclick=()=>{
     hard75 = default75HardState();
+    window._challengeDate = today;
     persist();
     showToast("Challenge reset");
     render75Hard();
@@ -2722,7 +2990,7 @@ function render75Hard(){
   wrap.querySelectorAll("[data-75-task]").forEach(box=>{
     box.onchange=()=>{
       hard75.days = hard75.days || {};
-      hard75.days[today] = Object.assign({notes: entry.notes || ""}, hard75.days[today] || {}, {[box.getAttribute("data-75-task")]: box.checked});
+      hard75.days[selectedDay] = Object.assign({notes: entry.notes || ""}, hard75.days[selectedDay] || {}, {[box.getAttribute("data-75-task")]: box.checked});
       persist();
       showToast("Checklist updated");
       render75Hard();
@@ -2730,7 +2998,7 @@ function render75Hard(){
   });
   wrap.querySelector("#save75NoteBtn").onclick=()=>{
     hard75.days = hard75.days || {};
-    hard75.days[today] = Object.assign({}, hard75.days[today] || {}, {notes:(wrap.querySelector("#hard75Note").value || "").trim()});
+    hard75.days[selectedDay] = Object.assign({}, hard75.days[selectedDay] || {}, {notes:(wrap.querySelector("#hard75Note").value || "").trim()});
     persist();
     showToast("Challenge note saved");
     render75Hard();
@@ -2922,7 +3190,6 @@ function renderPlan(){
   const mode = window._planMode || "overview";
   const today = todayISO();
   const challengeStats = get75HardStats();
-  const resetStats = getResetStats();
   const activeChallenge = customChallenges.find(c=>c.id===activeChallengeId) || null;
 
   let detailHtml = "";
@@ -2940,44 +3207,15 @@ function renderPlan(){
         </div>
       </div>
     `;
-  } else if(mode==="challenge"){
-    detailHtml = `
-      <div class="card">
-        <h2>Challenge</h2>
-        <div class="small">Use this when you want a sharper, more structured push.</div>
-        <div class="quick-grid" style="margin-top:12px;">
-          <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${challengeStats.doneToday}/${challengeStats.totalTasks}</div></div><div class="small">Challenge items complete</div></div>
-          <div class="stat-chip"><div class="row-between"><div>Progress</div><div class="badge-num">${challengeStats.completedDays}</div></div><div class="small">Completed days</div></div>
-        </div>
-        <div class="small" style="margin-top:12px;">${activeChallenge ? `Workout focus challenge: ${escapeHtml(activeChallenge.name)}` : "No workout focus challenge active right now."}</div>
-        <div class="btn-row">
-          <button class="btn primary" id="planOpenChallengeBtn">Open challenge tools</button>
-        </div>
-      </div>
-    `;
-  } else if(mode==="reset"){
-    detailHtml = `
-      <div class="card">
-        <h2>Reset</h2>
-        <div class="small">Movement keeps you from sinking. Care keeps you from hardening. Meaning keeps you from drifting.</div>
-        <div class="quick-grid" style="margin-top:12px;">
-          <div class="stat-chip"><div class="row-between"><div>Today</div><div class="badge-num">${resetStats.doneToday}/3</div></div><div class="small">Body / care / meaning</div></div>
-          <div class="stat-chip"><div class="row-between"><div>Full days</div><div class="badge-num">${resetStats.fullDays}</div></div><div class="small">Last 28 days</div></div>
-        </div>
-        <div class="btn-row">
-          <button class="btn primary" id="planOpenResetBtn">Open reset planner</button>
-        </div>
-      </div>
-    `;
   } else {
     detailHtml = `
       <div class="card">
         <h2>How To Use This App</h2>
-        <div class="small">Today is for doing. Plan is for shaping the week. Health is for body metrics. History is for review.</div>
+        <div class="small">Today is your dashboard. Workout is for logging. Health is for body metrics. History is for review.</div>
         <div class="quick-grid" style="margin-top:12px;">
           <div class="stat-chip"><div class="row-between"><div>Training</div><div class="badge-num">${entries.filter(e=>(e.date||"").slice(0,10)===today).length}</div></div><div class="small">Workouts today</div></div>
-          <div class="stat-chip"><div class="row-between"><div>Challenge</div><div class="badge-num">${challengeStats.doneToday}/${challengeStats.totalTasks}</div></div><div class="small">Items today</div></div>
-          <div class="stat-chip"><div class="row-between"><div>Reset</div><div class="badge-num">${resetStats.doneToday}/3</div></div><div class="small">Anchors today</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Weekly points</div><div class="badge-num">${calcWeekComponents(weekEpoch).total}</div></div><div class="small">Score this week</div></div>
+          <div class="stat-chip"><div class="row-between"><div>Health</div><div class="badge-num">${bpLog.filter(e=>(e.date||"").slice(0,10)===today).length + hLog.filter(e=>(e.date||"").slice(0,10)===today).length}</div></div><div class="small">Logs today</div></div>
         </div>
       </div>
     `;
@@ -2989,7 +3227,7 @@ function renderPlan(){
         <div>
           <div class="hero-kicker">Plan</div>
           <h2 class="hero-title">Shape the week, not the chaos</h2>
-          <div class="small hero-sub">This is the calmer control center for training, challenges, and reset routines.</div>
+          <div class="small hero-sub">This is the calmer control center for training and review.</div>
         </div>
         <div class="score-pill">
           <div class="small">Weekly plan</div>
@@ -2999,8 +3237,6 @@ function renderPlan(){
       <div class="segmented" style="margin-top:16px;">
         <button class="btn ${mode==="overview"?"soft":""}" data-plan-mode="overview">Overview</button>
         <button class="btn ${mode==="train"?"soft":""}" data-plan-mode="train">Train</button>
-        <button class="btn ${mode==="challenge"?"soft":""}" data-plan-mode="challenge">Challenge</button>
-        <button class="btn ${mode==="reset"?"soft":""}" data-plan-mode="reset">Reset</button>
       </div>
     </div>
     ${detailHtml}
@@ -3014,10 +3250,6 @@ function renderPlan(){
   });
   const openWorkoutBtn = wrap.querySelector("#planOpenWorkoutBtn");
   if(openWorkoutBtn) openWorkoutBtn.onclick=()=>showScreen("workout");
-  const openChallengeBtn = wrap.querySelector("#planOpenChallengeBtn");
-  if(openChallengeBtn) openChallengeBtn.onclick=()=>showScreen("75hard");
-  const openResetBtn = wrap.querySelector("#planOpenResetBtn");
-  if(openResetBtn) openResetBtn.onclick=()=>showScreen("reset");
 }
 
 function renderHistory(){
@@ -3028,18 +3260,14 @@ function renderHistory(){
   const days = [];
   for(let i=0;i<28;i++){
     const day = addDaysISO(todayISO(), -i);
-    const dayWorkouts = entries.filter(e=>(e.date||"").slice(0,10)===day);
-    const dayHealth = bpLog.filter(e=>(e.date||"").slice(0,10)===day).length + hLog.filter(e=>(e.date||"").slice(0,10)===day).length;
-    const dayMotivation = checkins.filter(e=>(e.date||"").slice(0,10)===day).length + gratitudeLog.filter(e=>(e.date||"").slice(0,10)===day).length + journalLog.filter(e=>(e.date||"").slice(0,10)===day).length;
-    const habitCount = habitDefs.reduce((s,h)=>s+(lwDays?.[day]?.[h.key]?1:0),0);
-    const totalPoints = dayWorkouts.reduce((s,e)=>s+minutesToPoints(Number(e.duration)||0),0) + dayHealth + dayMotivation;
+    const summary = activitySummaryFor(day);
     days.push({
       day,
-      workoutCount: dayWorkouts.length,
-      habitCount,
-      healthCount: dayHealth,
-      totalPoints,
-      hasAny: dayWorkouts.length || habitCount || dayHealth || dayMotivation
+      workoutCount: summary.workoutCount,
+      challengeCount: summary.challengeCount,
+      healthCount: summary.healthCount,
+      totalPoints: summary.points,
+      hasAny: summary.hasAny
     });
   }
 
@@ -3073,7 +3301,7 @@ function renderHistory(){
     <div class="card hero-card">
       <div class="hero-head">
         <div>
-          <div class="hero-kicker">History & Trends</div>
+          <div class="hero-kicker">📈 History & Trends</div>
           <h2 class="hero-title">Your streaks and records</h2>
           <div class="small hero-sub">See how the last month is stacking up and where your best efforts happened.</div>
         </div>
@@ -3085,13 +3313,13 @@ function renderHistory(){
       <div class="quick-grid" style="margin-top:14px;">
         <div class="stat-chip"><div class="row-between"><div>Longest streak</div><div class="badge-num">${longestStreak}</div></div><div class="small">Days with any activity</div></div>
         <div class="stat-chip"><div class="row-between"><div>Current streak</div><div class="badge-num">${currentStreak}</div></div><div class="small">Including today</div></div>
-        <div class="stat-chip"><div class="row-between"><div>28-day points</div><div class="badge-num">${totalWorkoutPoints}</div></div><div class="small">Workout, habits, health, notes</div></div>
+        <div class="stat-chip"><div class="row-between"><div>28-day points</div><div class="badge-num">${totalWorkoutPoints}</div></div><div class="small">Workout, challenge, health</div></div>
         <div class="stat-chip"><div class="row-between"><div>Best week</div><div class="badge-num">${records.bestWeek.value || 0}</div></div><div class="small">${records.bestWeek.label || "No record yet"}</div></div>
       </div>
     </div>
 
     <div class="card">
-      <h2>Records</h2>
+      <h2>🌟 Records</h2>
       <div class="record-grid">
         <div class="record-card">
           <div class="small">Longest workout</div>
@@ -3117,7 +3345,7 @@ function renderHistory(){
     </div>
 
     <div class="card">
-      <h2>History</h2>
+      <h2>🗂️ History</h2>
       <div class="small">Your last 28 days at a glance.</div>
       <div class="segmented" style="margin-top:12px;">
         <button class="btn ${historyMode==="all"?"soft":""}" data-history-mode="all">All days</button>
@@ -3127,12 +3355,12 @@ function renderHistory(){
     </div>
 
     <div class="card">
-      <h2>Daily Rollup</h2>
+      <h2>🧾 Daily Rollup</h2>
       ${filteredDays.slice(0,10).map(day=>`
         <div class="list-row soft">
           <div style="flex:1;">
             <div style="font-weight:600;">${day.day}</div>
-            <div class="small">${day.workoutCount} workouts - ${day.habitCount} habits - ${day.healthCount} health logs</div>
+            <div class="small">${day.workoutCount} workouts - ${day.challengeCount} challenge checks - ${day.healthCount} health logs</div>
           </div>
           <div class="badge-num">${day.totalPoints}</div>
         </div>
@@ -3140,7 +3368,7 @@ function renderHistory(){
     </div>
 
     <div class="card">
-      <h2>Recent Workouts</h2>
+      <h2>💪 Recent Workouts</h2>
       ${recentWorkouts.length ? recentWorkouts.map(e=>`
         <div class="list-row soft">
           <div style="flex:1;">
@@ -3153,7 +3381,7 @@ function renderHistory(){
     </div>
 
     <div class="card">
-      <h2>Challenge Badges</h2>
+      <h2>🏅 Challenge Badges</h2>
       ${recentBadges.length ? recentBadges.map(b=>`
         <div class="list-row soft">
           <div style="flex:1;">
@@ -3230,7 +3458,6 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 try{
   showScreen("overview");
-  maybeSendReminder();
 }catch(err){
   const target = document.getElementById('screen-overview');
   if(target){
@@ -3241,7 +3468,6 @@ try{
 
 document.addEventListener("visibilitychange", ()=>{
   if(document.visibilityState === "hidden") flushPersist();
-  if(document.visibilityState === "visible") maybeSendReminder();
 });
 window.addEventListener("pagehide", flushPersist);
 window.addEventListener("beforeunload", flushPersist);
@@ -3252,3 +3478,4 @@ if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)){
 </script>
 </body>
 </html>
+
