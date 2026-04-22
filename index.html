@@ -471,22 +471,50 @@ textarea.input{
 }
 .week-plan{
   display:grid;
-  grid-template-columns:repeat(7,minmax(0,1fr));
-  gap:8px;
+  grid-template-columns:1fr;
+  gap:10px;
   margin-top:12px;
 }
 .day-pill{
   border:1px solid var(--border);
   border-radius:16px;
-  padding:10px 8px;
+  padding:14px;
   background:rgba(255,255,255,.03);
-  text-align:center;
+  text-align:left;
 }
 .day-pill.active{
   border-color:rgba(55,183,172,.3);
   background:linear-gradient(180deg,rgba(55,183,172,.15),rgba(255,255,255,.03));
 }
 .day-pill .small{display:block;margin-top:4px;}
+.plan-day-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  margin-bottom:10px;
+}
+.plan-day-name{
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text);
+}
+.plan-day-badge{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--accent);
+}
+.plan-input{
+  margin:0;
+  min-height:50px;
+  padding:12px;
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(10,15,22,.98),rgba(17,24,34,.96));
+}
 .segmented{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -768,9 +796,6 @@ textarea.input{
   .mini-rings,
   .summary-grid{
     grid-template-columns:1fr;
-  }
-  .week-plan{
-    grid-template-columns:repeat(2,minmax(0,1fr));
   }
   .screen{
     padding:14px;
@@ -1082,13 +1107,25 @@ function get75HardStats(){
 function defaultWeeklyPlan(){
   return {
     Mon:"Strength",
-    Tue:"Cardio",
-    Wed:"Recovery",
+    Tue:"Run 5k",
+    Wed:"Yoga 5:15 pm",
     Thu:"Strength",
-    Fri:"Cardio",
-    Sat:"Long Session",
+    Fri:"Walk or cardio",
+    Sat:"Long session",
     Sun:"Recovery"
   };
+}
+
+function weeklyPlanPlaceholder(day){
+  return {
+    Mon:"Strength",
+    Tue:"Run 5k",
+    Wed:"Yoga 5:15 pm",
+    Thu:"Walk",
+    Fri:"Gym 6 pm",
+    Sat:"Long run",
+    Sun:"Recovery"
+  }[day] || "Add a plan";
 }
 
 function dayKeyFromISO(dateISO){
@@ -1828,14 +1865,12 @@ function renderOverview(){
   const pct=Math.min(100,Math.round((thisWeekTotal/(goal||1))*100));
   const pointsLeft = Math.max(0, (goal||0) - thisWeekTotal);
   const t=todayISO();
-  const winDone=!!todaysWins[t];
   const workoutsThisWeek = entries.filter(e=>e.date>=weekEpoch).length;
   const workoutsLast30 = entries.filter(e=>(e.date||"")>=addDaysISO(t,-29)).length;
   const uniqueWorkoutDaysThisWeek = new Set(entries.filter(e=>(e.date||"")>=weekEpoch).map(e=>(e.date||"").slice(0,10)).filter(Boolean)).size;
   const healthThisWeek = bpLog.filter(r=>r.date>=weekEpoch).length + hLog.filter(r=>r.date>=weekEpoch).length;
   const todaySummary = activitySummaryFor(t);
   const todayPlan = buildTodayPlan();
-  const challengeStats = get75HardStats();
   const records = computeRecords();
   const currentWt = currentWeight();
   const weightDelta = weightLost();
@@ -1843,18 +1878,6 @@ function renderOverview(){
   const weightPct = weightProgress();
   const todaySlot = weeklyPlanLabel(t);
   const toneClass = planTone(todayPlan.label + " " + todaySlot);
-  const last14 = [];
-  for(let i=13;i>=0;i--){
-    const day = addDaysISO(t, -i);
-    last14.push(Object.assign({day}, activitySummaryFor(day)));
-  }
-
-  const todayPlanButtons = todayPlan.actions.map(action=>`<button class="btn ${todayPlan.tone==="primary"?"primary":"soft"}" data-plan-action="${escapeAttr(action)}">${escapeHtml(action)}</button>`).join("");
-  const calendarHtml = last14.map(day=>{
-    const css = `${day.hasAny ? "good" : "empty"} ${day.day===t ? "active" : ""}`.trim();
-    const label = day.hasWorkout ? "Workout" : (day.hasChallenge ? "Challenge" : (day.hasHealth ? "Health" : "-"));
-    return `<div class="calendar-day ${css}"><div class="small">${day.day.slice(5)}</div><div class="badge-num">${day.activeCount}</div><div class="small">${label}</div></div>`;
-  }).join("");
   wrap.innerHTML=`
     <div class="card hero-card">
       <div class="hero-head">
@@ -1887,17 +1910,17 @@ function renderOverview(){
             </div>
             <div class="stats-row">
               <div>
-                <div class="stats-label">Challenge</div>
-                <div class="stats-sub">Checked off today</div>
+                <div class="stats-label">Workout days</div>
+                <div class="stats-sub">Unique days this week</div>
               </div>
-              <div class="stats-value">${challengeStats.doneToday}/${challengeStats.totalTasks}</div>
+              <div class="stats-value">${uniqueWorkoutDaysThisWeek}</div>
             </div>
             <div class="stats-row">
               <div>
-                <div class="stats-label">Health logs</div>
-                <div class="stats-sub">This week</div>
+                <div class="stats-label">Current weight</div>
+                <div class="stats-sub">${currentWt==null?"No weigh-in yet":"Latest check-in"}</div>
               </div>
-              <div class="stats-value">${healthThisWeek}</div>
+              <div class="stats-value">${currentWt==null?"-":currentWt}</div>
             </div>
           </div>
         </div>
@@ -1932,17 +1955,6 @@ function renderOverview(){
       ${weightPct==null ? '<div class="small" style="margin-top:12px;">Set a start weight and goal in Health to make body progress easier to review.</div>' : `<div class="small" style="margin-top:12px;">Weight goal progress: ${weightPct}% complete${weightDelta!=null ? ` | ${weightDelta} lb changed from start` : ""}</div><div class="progress-bg" style="margin-top:8px;"><div class="progress-fg" style="width:${weightPct}%;"></div></div>`}
     </div>
 
-    <div class="card">
-      <h2>🏆 Weekly Score <span class="subtle">(${weekEpoch} -> now)</span></h2>
-      <div class="big-score">${thisWeekTotal} / ${goal} pts</div>
-      <div class="progress-bg"><div class="progress-fg" style="width:${pct}%;"></div></div>
-      <div class="small" style="margin-top:10px;">Theme: <span class="badge-num">${escapeHtml(monthTheme)}</span></div>
-      <div class="btn-row" style="margin-top:12px;"><button class="btn" id="editThemeBtn">Edit theme</button></div>
-      <div id="themeEdit" class="hidden" style="margin-top:10px;">
-        <input class="input" id="themeInput" value="${escapeAttr(monthTheme)}" />
-        <button class="btn" id="saveThemeBtn">Save</button>
-      </div>
-    </div>
 
     <div class="card">
       <h2>🌟 Personal Records</h2>
@@ -1952,23 +1964,36 @@ function renderOverview(){
       </div>
     </div>
 
+    <div class="card">
+      <h2>Weekly Plan</h2>
+      <div class="small">Write the actual plan for each day. Today reads directly from this schedule.</div>
+      <div class="week-plan">
+        ${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(day=>{
+          const isActive = day===todaySlot;
+          return `<label class="day-pill ${isActive ? "active" : ""}">
+            <div class="plan-day-head">
+              <div class="plan-day-name">${day}</div>
+              ${isActive ? '<div class="plan-day-badge">Today</div>' : ""}
+            </div>
+            <input class="input plan-input" data-weekly-plan-day="${day}" value="${escapeAttr(weeklyPlan[day] || "")}" placeholder="${escapeAttr(weeklyPlanPlaceholder(day))}" />
+          </label>`;
+        }).join("")}
+      </div>
+    </div>
   `;
 
-  wrap.querySelectorAll("[data-plan-action]").forEach(btn=>{
-    btn.onclick=()=>{
-      showScreen("workout");
+  wrap.querySelectorAll("[data-weekly-plan-day]").forEach(input=>{
+    const savePlan = (ev)=>{
+      const day = ev.target.getAttribute("data-weekly-plan-day") || "";
+      if(!day) return;
+      weeklyPlan[day] = (ev.target.value || "").trim() || "Open";
+      persist();
+      showToast("Weekly plan saved");
+      renderOverview();
     };
+    input.onchange=savePlan;
+    input.onblur=savePlan;
   });
-
-  const editBtn=wrap.querySelector("#editThemeBtn");
-  const editBox=wrap.querySelector("#themeEdit");
-  editBtn.onclick=()=>{ editBox.classList.toggle("hidden"); };
-  wrap.querySelector("#saveThemeBtn").onclick=()=>{
-    monthTheme = wrap.querySelector("#themeInput").value.trim() || monthTheme;
-    persist();
-    showToast("Saved");
-    renderOverview();
-  };
 
   if(workoutsThisWeek>=3) maybeUnlock("three_workouts_week","3 workouts in a week");
   if(workoutsThisWeek>0 && healthThisWeek>0) maybeUnlock("health_and_workout_week","Health + Workout in one week");
@@ -3478,4 +3503,5 @@ if('serviceWorker' in navigator && /^https?:$/i.test(location.protocol)){
 </script>
 </body>
 </html>
+
 
